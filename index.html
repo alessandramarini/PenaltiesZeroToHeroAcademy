@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#050a07">
+    <meta name="description" content="Betting Exchange Academy - Simulatore di Trading Sportivo">
+    
+    <title>Betting Exchange Academy</title>
+    
+    <!-- OTTIMIZZAZIONI WPO (Web Performance Optimization) -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="image" href="logo-tondo.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        :root {
+            --bf-back: #a6d8ff;
+            --bf-back-border: #8abce6;
+            --bf-back-text: #111111;
+            --bf-lay: #f9c9d4;
+            --bf-lay-border: #e5aeb8;
+            --bf-lay-text: #111111;
+            --neon-green: #00ff44;
+        }
+
+        /* HARDWARE ACCELERATION BASE */
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: #050a07;
+            font-family: 'Inter', sans-serif;
+            user-select: none; -webkit-user-select: none;
+            touch-action: none; overscroll-behavior: none;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        #gameCanvas {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;
+            transform: translateZ(0); will-change: transform;
+        }
+
+        .font-mono-num { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+
+        /* UI GIOCO */
+        .neon-box {
+            background: rgba(0,0,0,0.85); border: 2px solid var(--neon-green); border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,255,68,0.2); backdrop-filter: blur(10px);
+            transform: translateZ(0);
+        }
+        .neon-text { color: var(--neon-green); text-shadow: 0 0 8px rgba(0,255,68,0.6); }
+
+        /* MODULO BETFAIR */
+        .bf-modal {
+            background: #ffffff; border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            border: 1px solid #e5e7eb; width: 100%; max-width: 400px; overflow: hidden;
+            display: flex; flex-direction: column; transform: translateZ(0);
+        }
+        
+        .bf-btn-back { background-color: var(--bf-back); border: 1px solid var(--bf-back-border); color: var(--bf-back-text); transition: filter 0.1s; }
+        .bf-btn-lay { background-color: var(--bf-lay); border: 1px solid var(--bf-lay-border); color: var(--bf-lay-text); transition: filter 0.1s; }
+        .bf-btn-back:active, .bf-btn-lay:active { filter: brightness(0.9); transform: scale(0.98); }
+        
+        .bf-selected-back { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #2b82c9; background-color: #7ab3e6; }
+        .bf-selected-lay { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #e890ac; background-color: #e6a8b7; }
+
+        .bf-submit { background-color: #f4c82f; color: #111; font-weight: 900; transition: transform 0.1s; border: 1px solid #dcae1b; box-shadow: 0 4px 6px rgba(244,200,47,0.3); }
+        .bf-submit:active { transform: scale(0.98); }
+        .bf-submit:disabled { background-color: #e5e7eb; color: #9ca3af; box-shadow: none; border-color: #d1d5db; transform: none; cursor: not-allowed; animation: none; }
+        .bf-submit:not(:disabled) { animation: pulseReady 2s infinite; cursor: pointer; }
+
+        @keyframes pulseReady {
+            0%, 100% { box-shadow: 0 0 0 rgba(244,200,47,0.4); }
+            50% { box-shadow: 0 4px 20px rgba(244,200,47,0.8); }
+        }
+
+        /* Slider Ottimizzato */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 8px 0; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 26px; width: 26px; border-radius: 50%;
+            background: #ffffff; border: 2px solid #2b82c9; cursor: pointer; margin-top: -11px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3); will-change: transform;
+        }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 5px; background: #e5e7eb; border-radius: 3px; }
+
+        /* Gestione Schermate */
+        .app-screen {
+            position: absolute; inset: 0; z-index: 50; display: none; flex-direction: column; 
+            align-items: center; justify-content: center; opacity: 0; transition: opacity 0.25s ease-out;
+            transform: translateZ(0);
+        }
+        .screen-active { display: flex !important; pointer-events: auto; }
+        
+        #game-touch-zone { position: absolute; inset: 0; z-index: 20; pointer-events: none; }
+        .touch-active { pointer-events: auto !important; cursor: crosshair; }
+
+        .lang-active { background: rgba(0,255,68,0.2); border-color: var(--neon-green) !important; transform: scale(1.1); }
+        
+        .result-overlay {
+            position: absolute; top: 35%; left: 50%; transform: translate(-50%, -50%) translateZ(0);
+            text-align: center; width: 100%; pointer-events: none; z-index: 100; display: none;
+            font-size: clamp(50px, 18vw, 130px); font-weight: 900; color: #ffffff;
+            text-transform: uppercase; font-style: italic; letter-spacing: -2px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); will-change: opacity, transform, filter;
+        }
+
+        .anim-epic { display: block; animation: epicPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes epicPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            70% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Ottimizzazione Barre In-Game */
+        .bar-gpu { will-change: transform, left, top, width; transform: translateZ(0); }
+    </style>
+</head>
+<body>
+
+    <!-- GIOCO 3D -->
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- ZONA TOUCH INVISIBILE (Sopra il canvas, cattura i tap velocissimi) -->
+    <div id="game-touch-zone"></div>
+
+    <!-- HUD GIOCO -->
+    <div id="game-hud" class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-3 md:p-5 opacity-0 transition-opacity duration-300" style="display: none;">
+        <div class="flex justify-between items-start">
+            <div class="neon-box px-3 py-1.5 flex flex-col items-center">
+                <span id="ui-score-lbl" class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">GOALS</span>
+                <span id="ui-score" class="text-2xl font-black text-white font-mono-num leading-none">0</span>
+            </div>
+            
+            <div class="flex flex-col items-end gap-2">
+                <div class="bg-black/80 px-3 py-1.5 rounded-lg border border-white/20 flex items-center gap-2 pointer-events-auto">
+                    <div class="flex flex-col items-end">
+                        <span id="ui-bank-lbl" class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">BANKROLL</span>
+                        <span id="ui-bank" class="text-lg font-black text-white font-mono-num">€100.00</span>
+                    </div>
+                    <button id="btn-reset-hud" class="w-7 h-7 bg-white/10 hover:bg-white/20 rounded-full flex justify-center items-center text-white active:scale-95 transition-all text-xs" title="Reset Bankroll">🔄</button>
+                </div>
+                <div id="ui-action-msg" class="bg-black/90 px-3 py-1.5 rounded-full neon-text text-[10px] font-bold uppercase tracking-widest border border-[#00ff44]/50 opacity-0 transition-opacity">
+                    -
+                </div>
+            </div>
+        </div>
+
+        <div id="game-result-msg" class="result-overlay"></div>
+
+        <!-- MIRA ALTEZZA -->
+        <div id="hud-v-container" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-8 h-[35%] max-h-[220px] bg-[#051108] border-2 border-[#0a2e14] rounded-full overflow-hidden shadow-[0_10px_20px_rgba(0,0,0,0.8)] hidden pointer-events-none">
+            <div id="hud-v-target" class="absolute left-0 right-0 bg-[#00ff44]/30 border-y border-[#00ff44]" style="top: 32%; height: 36%;"></div>
+            <div id="hud-v-cursor" class="bar-gpu absolute left-0 right-0 h-1.5 bg-white top-[50%] -translate-y-1/2 shadow-[0_0_8px_white]"></div>
+        </div>
+
+        <!-- POTENZA E MIRA ORIZZONTALE -->
+        <div id="hud-h-container" class="w-full flex flex-col items-center mb-4 gap-1.5 pointer-events-none transition-opacity">
+            <div class="w-full max-w-[350px] h-8 bg-[#051108] border-2 border-[#0a2e14] rounded-full overflow-hidden relative shadow-[0_10px_20px_rgba(0,0,0,0.8)]">
+                <div id="hud-target" class="absolute top-0 bottom-0 bg-[#00ff44]/30 hidden border-x border-[#00ff44]" style="left: 32%; width: 36%;"></div>
+                <div id="hud-fill" class="bar-gpu h-full bg-gradient-to-r from-green-800 to-[#00ff44] w-[0%]"></div>
+                <div id="hud-cursor" class="bar-gpu absolute top-0 bottom-0 w-1.5 bg-white left-[50%] -translate-x-1/2 shadow-[0_0_8px_white] hidden"></div>
+            </div>
+            <p id="ui-tap-msg" class="text-[9px] font-bold text-gray-400 tracking-[0.2em] uppercase bg-black/50 px-3 py-0.5 rounded-full">TAP SCREEN TO STOP</p>
+        </div>
+    </div>
+
+    <!-- SCHERMATA 1: MENU PRINCIPALE -->
+    <div id="screen-menu" class="app-screen bg-black/90 backdrop-blur-sm screen-active opacity-100">
+        <div class="relative mb-6 mt-4">
+            <div class="absolute inset-0 rounded-full bg-[#00ff44]/20 blur-[50px] animate-pulse"></div>
+            <img fetchpriority="high" src="logo-tondo.jpeg" alt="Logo" class="relative w-32 h-32 md:w-40 md:h-40 rounded-full border-2 border-[#00ff44] shadow-2xl object-cover" onerror="this.src='https://via.placeholder.com/150/000000/00ff44?text=ACADEMY'">
+        </div>
+        <h1 id="main-title" class="text-white text-2xl md:text-4xl font-black tracking-widest uppercase text-center drop-shadow-lg leading-tight">BETTING EXCHANGE ROOM<br><span class="text-[#00ff44]">ACADEMY</span></h1>
+        <p id="menu-sub" class="mt-1 text-gray-400 text-[10px] md:text-xs tracking-[0.3em] font-medium uppercase text-center mb-8">Learn Risk Management</p>
+
+        <div class="flex gap-3 p-2.5 bg-white/5 rounded-full border border-white/10 mb-6">
+            <button class="lang-btn w-10 h-10 rounded-full text-xl border-2 border-transparent hover:bg-white/10 transition-all" data-lang="en">🇬🇧</button>
+            <button class="lang-btn w-10 h-10 rounded-full text-xl border-2 border-transparent hover:bg-white/10 transition-all" data-lang="it">🇮🇹</button>
+            <button class="lang-btn w-10 h-10 rounded-full text-xl border-2 border-transparent hover:bg-white/10 transition-all" data-lang="es">🇪🇸</button>
+            <button class="lang-btn w-10 h-10 rounded-full text-xl border-2 border-transparent hover:bg-white/10 transition-all" data-lang="pt">🇧🇷</button>
+        </div>
+
+        <button id="btn-start" class="px-8 py-3.5 bg-[#00ff44] text-black rounded-full font-black text-base md:text-lg tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,68,0.4)] hover:scale-105 active:scale-95 transition-transform">
+            START ACADEMY
+        </button>
+    </div>
+
+    <!-- SCHERMATA 2: MODULO BETFAIR EXCHANGE -->
+    <div id="screen-betting" class="app-screen bg-black/80 backdrop-blur-md p-3">
+        <div class="bf-modal">
+            <!-- Header -->
+            <div class="bg-gray-100 px-4 py-2.5 flex justify-between items-center border-b border-gray-300 rounded-t-2xl">
+                <span id="bet-market" class="font-bold text-gray-800 text-xs uppercase tracking-wide">Penalty Scored?</span>
+                <span class="text-[9px] font-bold text-gray-500 uppercase flex items-center gap-1">
+                    <span id="bet-avail">Balance:</span> 
+                    <span id="bet-bank-top" class="font-mono-num text-[#2b82c9]">€100.00</span>
+                    <button id="btn-reset-bet" class="ml-1 w-5 h-5 flex items-center justify-center bg-gray-300 text-gray-700 hover:bg-gray-400 rounded-full transition-colors active:scale-95 text-[10px]" title="Reset Bankroll">🔄</button>
+                </span>
+            </div>
+
+            <!-- Quote (Punta/Banca) -->
+            <div class="flex px-3 py-3 gap-2 bg-white border-b border-gray-200">
+                <div class="flex-1 flex flex-col">
+                    <span id="bet-lbl-back" class="text-[9px] text-center text-[#2b82c9] font-black uppercase mb-1 tracking-wider">BACK (Yes)</span>
+                    <button id="btn-opt-back" class="bf-btn-back rounded flex flex-col items-center py-1.5 shadow-sm">
+                        <span class="font-black text-xl leading-none">1.29</span>
+                        <span class="text-[8px] mt-0.5 font-mono-num font-bold opacity-70">€3,700</span>
+                    </button>
+                </div>
+                <div class="flex-1 flex flex-col">
+                    <span id="bet-lbl-lay" class="text-[9px] text-center text-[#d81b60] font-black uppercase mb-1 tracking-wider">LAY (No)</span>
+                    <button id="btn-opt-lay" class="bf-btn-lay rounded flex flex-col items-center py-1.5 shadow-sm">
+                        <span class="font-black text-xl leading-none">1.31</span>
+                        <span class="text-[8px] mt-0.5 font-mono-num font-bold opacity-70">€141</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Schedina -->
+            <div id="bet-slip" class="px-4 py-3 flex flex-col bg-gray-50 hidden flex-1 overflow-y-auto">
+                
+                <div class="flex justify-between items-center mb-2 bg-white px-2 py-1.5 rounded border border-gray-200 shadow-sm">
+                    <span id="slip-type" class="text-[10px] font-black px-2 py-0.5 rounded text-white uppercase tracking-wider bg-gray-800">SELECT</span>
+                    <span class="text-[10px] text-gray-500 font-bold uppercase"><span id="slip-odd-lbl">Odds:</span> <span id="slip-odd" class="font-black text-gray-900 font-mono-num">0.00</span></span>
+                </div>
+
+                <div class="flex flex-col gap-1 mb-2">
+                    <div class="flex justify-between items-center">
+                        <span id="slip-stake-lbl" class="text-[10px] text-gray-600 font-bold uppercase">Stake Amount</span>
+                        <span id="slip-stake-val" class="text-lg font-black text-gray-900 font-mono-num bg-white px-2 rounded border border-gray-200 shadow-inner">€0.00</span>
+                    </div>
+                    
+                    <div class="flex gap-1.5 mt-1">
+                        <button class="quick-btn flex-1 py-1 bg-white border border-gray-300 rounded text-[10px] font-bold text-[#2b82c9] shadow-sm active:bg-gray-100" data-val="1">1%</button>
+                        <button class="quick-btn flex-1 py-1 bg-white border border-gray-300 rounded text-[10px] font-bold text-[#2b82c9] shadow-sm active:bg-gray-100" data-val="2">2%</button>
+                        <button class="quick-btn flex-1 py-1 bg-white border border-gray-300 rounded text-[10px] font-bold text-[#2b82c9] shadow-sm active:bg-gray-100" data-val="3">3%</button>
+                        <button class="quick-btn flex-1 py-1 bg-white border border-gray-300 rounded text-[10px] font-bold text-[#2b82c9] shadow-sm active:bg-gray-100" data-val="5">5%</button>
+                    </div>
+                    
+                    <input type="range" id="slip-slider" min="0" max="100" value="0" step="1">
+                    <div class="text-center">
+                        <span id="slip-perc-val" class="text-[9px] font-bold text-gray-500 bg-gray-200 px-2 py-0.5 rounded">0%</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-x-3 gap-y-1 p-2.5 bg-white border border-gray-200 rounded-lg shadow-sm mb-2">
+                    <div class="flex flex-col">
+                        <span id="slip-liab-lbl" class="text-[9px] text-gray-500 font-bold uppercase">Liability (Risk)</span>
+                        <span id="slip-liab-val" class="font-black text-red-500 font-mono-num text-sm">€0.00</span>
+                    </div>
+                    <div class="flex flex-col text-right">
+                        <span id="slip-prof-lbl" class="text-[9px] text-gray-500 font-bold uppercase">Net Profit (-5%)</span>
+                        <span id="slip-prof-val" class="font-black text-[#00ff44] font-mono-num text-sm text-shadow-sm">€0.00</span>
+                    </div>
+                    <div class="col-span-2 w-full h-1 bg-gray-200 rounded-full overflow-hidden mt-1">
+                        <div id="risk-bar" class="bar-gpu h-full bg-[#00ff44] w-[0%]"></div>
+                    </div>
+                </div>
+
+                <div id="slip-edu-box" class="p-2.5 rounded bg-[#f8fafc] border-l-[3px] border-gray-400 text-[10px] text-gray-700 leading-tight shadow-inner mb-2">
+                    <span id="slip-edu-text">Select Back or Lay.</span>
+                </div>
+
+                <button id="btn-place" class="w-full py-3 bf-submit rounded-lg text-sm tracking-[0.1em]" disabled>
+                    PLACE BET
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHERMATA 3: RECAP (SCONTRINO LIGHT MODE) -->
+    <div id="screen-recap" class="app-screen bg-black/80 backdrop-blur-md p-4">
+        <div class="w-full max-w-[420px] bg-white border border-gray-300 rounded-xl flex flex-col overflow-hidden shadow-2xl transform translateZ-0">
+            
+            <!-- Banner Header -->
+            <div id="recap-banner" class="w-full py-3 text-center text-white font-black text-sm uppercase tracking-widest bg-gray-800">
+                RESULT
+            </div>
+            
+            <div class="p-4 flex flex-col gap-3 bg-gray-50">
+                <!-- Azione Iniziale -->
+                <div class="text-center pb-2 border-b border-gray-200">
+                    <span id="recap-action" class="text-xs font-medium text-gray-700 leading-tight"></span>
+                </div>
+
+                <!-- Box Tutorial (Spiegazione Matematica) -->
+                <div class="flex flex-col gap-2">
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest border-b border-gray-100 pb-1 mb-1">
+                        <span id="recap-math-lbl">Exchange Math</span>
+                    </div>
+                    
+                    <div id="recap-math" class="flex flex-col gap-2">
+                        <!-- Iniettato via JS con le freccine -->
+                    </div>
+                </div>
+
+                <!-- Risultato Economico Finale -->
+                <div class="mt-2 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-1">
+                        <span id="recap-pnl-lbl" class="text-xs font-bold text-gray-600 uppercase">Net Return:</span>
+                        <span id="recap-pnl" class="text-lg font-black font-mono-num">€0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center border-t border-gray-200 pt-2 mt-1">
+                        <span id="recap-new-bank-lbl" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">New Bankroll:</span>
+                        <span id="recap-bank-val" class="text-sm font-bold font-mono-num text-gray-800">€0.00</span>
+                    </div>
+                </div>
+
+                <!-- Box Bancarotta -->
+                <div id="recap-bankrupt" class="hidden mt-1 p-2 bg-red-100 border border-red-300 rounded text-center">
+                    <p id="recap-bankrupt-txt" class="text-[10px] text-red-600 font-bold uppercase"></p>
+                </div>
+            </div>
+
+            <!-- Pulsante Next -->
+            <div class="p-3 bg-gray-100 border-t border-gray-200">
+                <button id="btn-next" class="w-full py-3 bg-[#f4c82f] border border-[#dcae1b] text-gray-900 rounded font-bold text-sm uppercase tracking-widest active:scale-95 transition-transform shadow-sm">
+                    NEXT KICK
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. DIZIONARIO MULTILINGUA ---
+        const i18n = {
+            en: {
+                TITLE: "BETTING EXCHANGE ROOM",
+                MENU_SUB: "Learn Risk Management", START: "START ACADEMY",
+                HUD_SCORE: "GOALS", HUD_BANK: "BANKROLL", HUD_TAP: "TAP TO STOP",
+                PHASE_PWR: "SET POWER", PHASE_AIM_H: "DIRECTION", PHASE_AIM_V: "HEIGHT",
+                MKT_TITLE: "Market: Penalty Scored?", MKT_AVAIL: "Balance:",
+                BTN_BACK: "BACK (Yes)", BTN_LAY: "LAY (No)",
+                SLIP_SEL: "SELECT", SLIP_ODD: "Odds:",
+                SLIP_STAKE: "Stake Amount", SLIP_LIAB: "Liability (Risk)", SLIP_PROF: "Net Profit (-5%)",
+                PLACE_BET: "PLACE BET", INSUFF_FUNDS: "INSUFFICIENT FUNDS",
+                SLIP_EDU_DEF: "Select Back or Lay.",
+                SLIP_TYPE_BACK: "BACK", SLIP_TYPE_LAY: "LAY",
+                TIP_BACK: "<b>BACK:</b> Betting on the outcome. Your max risk (Liability) is strictly limited to your Stake.",
+                TIP_LAY: "<b>LAY:</b> Betting against the outcome (Acting as Bookie). Risk (Liability) = Stake × (Odds - 1).",
+                
+                RECAP_WIN: "BET WON", RECAP_LOSS: "BET LOST",
+                RECAP_MATH_LBL: "Mathematical Breakdown", RECAP_PNL_LBL: "Net Return:", RECAP_NEW_BANK: "New Balance:", NEXT_KICK: "NEXT KICK",
+                ACT_BACK: "You <b class='text-[#2b82c9]'>BACKED</b> GOAL at odds {odd} with a Stake of €{stake}.",
+                ACT_LAY: "You <b class='text-[#d81b60]'>LAYED</b> GOAL at odds {odd} asking for a Stake of €{stake}.",
+                
+                RES_TXT: "Result", GROSS_TXT: "Gross Profit", COMM_TXT: "Betfair Comm. (5%)", LOSS_TXT: "Paid Liability",
+                TUT_B_WON: "You bet on GOAL and it scored! You win the odds multiplier.",
+                TUT_B_LOST: "You bet on GOAL but it missed. You lost your stake.",
+                TUT_L_WON: "You acted as Bookie and bet on MISS. The kicker failed, you keep their stake.",
+                TUT_L_LOST: "You acted as Bookie but the kicker SCORED. You must pay out the winnings.",
+                
+                BANKRUPT: "BANKRUPT! Poor risk management. Reloaded €100.00.",
+                GOL: "GOAL", SAVED: "SAVED", OUT: "MISSED", PERFECT: "TOP CORNER"
+            },
+            it: {
+                TITLE: "BETTING EXCHANGE ROOM",
+                MENU_SUB: "Impara la gestione del rischio", START: "INIZIA ACCADEMIA",
+                HUD_SCORE: "GOL", HUD_BANK: "BANKROLL", HUD_TAP: "TOCCA PER FERMARE",
+                PHASE_PWR: "POTENZA", PHASE_AIM_H: "MIRA ORIZZ.", PHASE_AIM_V: "ALTEZZA",
+                MKT_TITLE: "Esito: Segna il Rigore?", MKT_AVAIL: "Saldo:",
+                BTN_BACK: "PUNTA (Sì)", BTN_LAY: "BANCA (No)",
+                SLIP_SEL: "SELEZIONA", SLIP_ODD: "Quota:",
+                SLIP_STAKE: "Stake (Puntata)", SLIP_LIAB: "Rischio (Liab)", SLIP_PROF: "Netto (-5%)",
+                PLACE_BET: "PIAZZA SCOMMESSA", INSUFF_FUNDS: "FONDI INSUFFICIENTI",
+                SLIP_EDU_DEF: "Seleziona Punta o Banca.",
+                SLIP_TYPE_BACK: "PUNTA", SLIP_TYPE_LAY: "BANCA",
+                TIP_BACK: "<b>PUNTA:</b> Scommetti a favore del Gol. Il rischio massimo (Responsabilità) è limitato all'importo puntato.",
+                TIP_LAY: "<b>BANCA:</b> Scommetti contro il Gol (fai il banco). Offri la quota agli altri. Rischio = Stake × (Quota - 1).",
+                
+                RECAP_WIN: "SCOMMESSA VINCENTE", RECAP_LOSS: "SCOMMESSA PERDENTE",
+                RECAP_MATH_LBL: "Dettaglio Matematico", RECAP_PNL_LBL: "Ritorno Netto:", RECAP_NEW_BANK: "Nuovo Saldo:", NEXT_KICK: "PROSSIMO RIGORE",
+                ACT_BACK: "Hai <b class='text-[#2b82c9]'>PUNTATO</b> sul GOL a quota {odd} con Stake di €{stake}.",
+                ACT_LAY: "Hai <b class='text-[#d81b60]'>BANCATO</b> il gol a quota {odd} richiedendo uno Stake di €{stake}.",
+                
+                RES_TXT: "Esito", GROSS_TXT: "Vincita Lorda", COMM_TXT: "Comm. Betfair (5%)", LOSS_TXT: "Responsabilità Pagata",
+                TUT_B_WON: "Hai scommesso sul GOL ed ha segnato. Vinci la quota moltiplicata per lo stake.",
+                TUT_B_LOST: "Hai scommesso sul GOL ma ha sbagliato. Perdi esattamente lo stake puntato.",
+                TUT_L_WON: "Hai bancato (scommesso contro) ed ha sbagliato. Trattieni lo stake di chi ha puntato.",
+                TUT_L_LOST: "Hai bancato ma ha segnato! Da buon bookmaker devi pagare la vincita (Responsabilità).",
+                
+                BANKRUPT: "BANCAROTTA! Gestione del rischio errata. Conto ricaricato a €100.00.",
+                GOL: "GOL", SAVED: "PARATA", OUT: "FUORI", PERFECT: "INCROCIO"
+            },
+            es: {
+                TITLE: "BETTING EXCHANGE ROOM",
+                MENU_SUB: "Aprende a gestionar el riesgo", START: "INICIAR ACADEMIA",
+                HUD_SCORE: "GOLES", HUD_BANK: "BANKROLL", HUD_TAP: "TOCA PARA PARAR",
+                PHASE_PWR: "POTENCIA", PHASE_AIM_H: "DIRECCIÓN", PHASE_AIM_V: "ALTURA",
+                MKT_TITLE: "¿Anotará Penalti?", MKT_AVAIL: "Saldo:",
+                BTN_BACK: "A FAVOR (Sí)", BTN_LAY: "EN CONTRA (No)",
+                SLIP_SEL: "SELECCIÓN", SLIP_ODD: "Cuota:",
+                SLIP_STAKE: "Importe (Stake)", SLIP_LIAB: "Riesgo (Liab)", SLIP_PROF: "Neto (-5%)",
+                PLACE_BET: "APOSTAR", INSUFF_FUNDS: "FONDOS INSUFICIENTES",
+                SLIP_EDU_DEF: "Selecciona A Favor o En Contra.",
+                SLIP_TYPE_BACK: "A FAVOR", SLIP_TYPE_LAY: "EN CONTRA",
+                TIP_BACK: "<b>A FAVOR:</b> Apuestas a que ocurre. Tu riesgo máximo está limitado al importe apostado (Stake).",
+                TIP_LAY: "<b>EN CONTRA:</b> Apuestas a que NO ocurre (Haces de Bookie). Riesgo = Stake × (Cuota - 1).",
+                
+                RECAP_WIN: "APUESTA GANADA", RECAP_LOSS: "APUESTA PERDIDA",
+                RECAP_MATH_LBL: "Desglose Matemático", RECAP_PNL_LBL: "Retorno Neto:", RECAP_NEW_BANK: "Nuevo Saldo:", NEXT_KICK: "SIGUIENTE PENALTI",
+                ACT_BACK: "Apostaste <b class='text-[#2b82c9]'>A FAVOR</b> del GOL a cuota {odd} con Stake €{stake}.",
+                ACT_LAY: "Apostaste <b class='text-[#d81b60]'>EN CONTRA</b> del gol a cuota {odd} con Stake €{stake}.",
+                
+                RES_TXT: "Resultado", GROSS_TXT: "Beneficio Bruto", COMM_TXT: "Com. Betfair (5%)", LOSS_TXT: "Riesgo Pagado",
+                TUT_B_WON: "Apostaste a favor y ocurrió. Ganas la cuota multiplicada por el stake.",
+                TUT_B_LOST: "Apostaste a favor pero falló. Pierdes tu stake.",
+                TUT_L_WON: "Apostaste en contra y falló. Ganas el stake del otro jugador.",
+                TUT_L_LOST: "Apostaste en contra pero anotó. Debes pagar el premio (Liability).",
+
+                BANKRUPT: "¡BANCARROTA! Mala gestión. Recargados €100.00 virtuales.",
+                GOL: "GOL", SAVED: "PARADA", OUT: "FUERA", PERFECT: "ESCUDRA"
+            },
+            pt: {
+                TITLE: "BETTING EXCHANGE ROOM",
+                MENU_SUB: "Aprenda gestão de risco", START: "INICIAR ACADEMIA",
+                HUD_SCORE: "GOLS", HUD_BANK: "BANCA", HUD_TAP: "TOQUE PARA PARAR",
+                PHASE_PWR: "FORÇA", PHASE_AIM_H: "DIREÇÃO", PHASE_AIM_V: "ALTURA",
+                MKT_TITLE: "Pênalti Marcado?", MKT_AVAIL: "Saldo:",
+                BTN_BACK: "A FAVOR (Sim)", BTN_LAY: "CONTRA (Não)",
+                SLIP_SEL: "SELEÇÃO", SLIP_ODD: "Odd:",
+                SLIP_STAKE: "Valor (Stake)", SLIP_LIAB: "Responsabilidade", SLIP_PROF: "Líquido (-5%)",
+                PLACE_BET: "FAZER APOSTA", INSUFF_FUNDS: "SALDO INSUFICIENTE",
+                SLIP_EDU_DEF: "Selecione A Favor ou Contra.",
+                SLIP_TYPE_BACK: "A FAVOR", SLIP_TYPE_LAY: "CONTRA",
+                TIP_BACK: "<b>A FAVOR:</b> Aposta que o evento ocorre. O risco máximo é limitado ao valor da Stake.",
+                TIP_LAY: "<b>CONTRA:</b> Aposta que NÃO ocorre (Age como Bookie). Risco = Stake × (Odd - 1).",
+                
+                RECAP_WIN: "APOSTA GANHA", RECAP_LOSS: "APOSTA PERDIDA",
+                RECAP_MATH_LBL: "Matemática Aplicada", RECAP_PNL_LBL: "Retorno Líquido:", RECAP_NEW_BANK: "Novo Saldo:", NEXT_KICK: "PRÓXIMO PÊNALTI",
+                ACT_BACK: "Apostou <b class='text-[#2b82c9]'>A FAVOR</b> do GOL com odd {odd} e Stake €{stake}.",
+                ACT_LAY: "Apostou <b class='text-[#d81b60]'>CONTRA</b> o gol com odd {odd} e Stake €{stake}.",
+                
+                RES_TXT: "Resultado", GROSS_TXT: "Lucro Bruto", COMM_TXT: "Com. Betfair (5%)", LOSS_TXT: "Responsabilidade Paga",
+                TUT_B_WON: "Você apostou no GOL e marcou. Ganha a odd multiplicada pela stake.",
+                TUT_B_LOST: "Você apostou no GOL, mas errou. Perde a stake exata.",
+                TUT_L_WON: "Apostou contra (Bookie) e ele errou. Fica com a stake do adversário.",
+                TUT_L_LOST: "Apostou contra, mas ele marcou. Você deve pagar os ganhos.",
+
+                BANKRUPT: "BANCA QUEBRADA! Má gestão. Recarregado €100.00 virtuais.",
+                GOL: "GOL", SAVED: "DEFESA", OUT: "FORA", PERFECT: "GOLAÇO"
+            }
+        };
+
+        let currentLang = 'en'; // Default
+        function t(k) { return i18n[currentLang][k]; }
+        function fStr(s, p) { return s.replace(/{(\w+)}/g, (_, k) => p[k]); }
+
+        // --- 2. GESTIONE STATI E VARIABILI GLOBALI ---
+        const S = { MENU: 0, BETTING: 1, POWER: 2, AIM_H: 3, AIM_V: 4, SHOOTING: 5, RECAP: 6 };
+        let state = S.MENU;
+        let bankroll = 100.00, score = 0;
+        
+        const ODDS = { back: 1.29, lay: 1.31 };
+        const COMM = 0.05;
+        let bet = { type: null, stake: 0, odd: 0, liab: 0, gross: 0, net: 0, perc: 0 };
+
+        // --- 3. GESTIONE UI E SCHERMATE ---
+        const ui = {
+            screens: { menu: 'screen-menu', bet: 'screen-betting', recap: 'screen-recap' },
+            game: { hud: document.getElementById('game-hud'), touch: document.getElementById('game-touch-zone'), score: document.getElementById('ui-score'), scoreLbl: document.getElementById('ui-score-lbl'), bank: document.getElementById('ui-bank'), bankLbl: document.getElementById('ui-bank-lbl'), msg: document.getElementById('ui-action-msg'), res: document.getElementById('game-result-msg'), tapMsg: document.getElementById('ui-tap-msg'), hBarCont: document.getElementById('hud-h-container'), vBarCont: document.getElementById('hud-v-container'), fill: document.getElementById('hud-fill'), target: document.getElementById('hud-target'), cursor: document.getElementById('hud-cursor'), vTarget: document.getElementById('hud-v-target'), vCursor: document.getElementById('hud-v-cursor') },
+            b: { topBank: document.getElementById('bet-bank-top'), slip: document.getElementById('bet-slip'), btnBack: document.getElementById('btn-opt-back'), btnLay: document.getElementById('btn-opt-lay'), typeLbl: document.getElementById('slip-type'), oddLbl: document.getElementById('slip-odd-lbl'), oddVal: document.getElementById('slip-odd'), stakeLbl: document.getElementById('slip-stake-lbl'), stakeVal: document.getElementById('slip-stake-val'), slider: document.getElementById('slip-slider'), sliderPerc: document.getElementById('slip-perc-val'), liabLbl: document.getElementById('slip-liab-lbl'), liabVal: document.getElementById('slip-liab-val'), profLbl: document.getElementById('slip-prof-lbl'), profVal: document.getElementById('slip-prof-val'), riskBar: document.getElementById('risk-bar'), eduTxt: document.getElementById('slip-edu-text'), eduBox: document.getElementById('slip-edu-box'), btnPlace: document.getElementById('btn-place') },
+            r: { banner: document.getElementById('recap-banner'), act: document.getElementById('recap-action'), mathLbl: document.getElementById('recap-math-lbl'), math: document.getElementById('recap-math'), pnlLbl: document.getElementById('recap-pnl-lbl'), newBankLbl: document.getElementById('recap-new-bank-lbl'), pnl: document.getElementById('recap-pnl'), bank: document.getElementById('recap-bank-val'), brBox: document.getElementById('recap-bankrupt'), brTxt: document.getElementById('recap-bankrupt-txt'), btnNext: document.getElementById('btn-next') }
+        };
+
+        function showScreen(targetId) {
+            Object.values(ui.screens).forEach(id => {
+                let el = document.getElementById(id);
+                if(id === targetId) { 
+                    el.style.display = 'flex';
+                    setTimeout(() => { el.style.opacity = 1; el.style.pointerEvents = 'auto'; }, 10);
+                } else { 
+                    el.style.pointerEvents = 'none';
+                    el.style.opacity = 0; 
+                    setTimeout(() => { if(el.style.opacity == 0) el.style.display = 'none'; }, 300);
+                }
+            });
+
+            if(targetId === 'none') {
+                ui.game.hud.style.display = 'flex';
+                setTimeout(() => ui.game.hud.style.opacity = 1, 10);
+            } else {
+                ui.game.hud.style.opacity = 0;
+                setTimeout(() => { if(ui.game.hud.style.opacity == 0) ui.game.hud.style.display = 'none'; }, 300);
+            }
+        }
+
+        function updateBank() {
+            const b = `€${bankroll.toFixed(2)}`;
+            ui.game.bank.innerText = b; ui.b.topBank.innerText = b;
+        }
+
+        // --- 4. BETTING LOGIC ---
+        ui.b.btnBack.addEventListener('click', () => setBet('back'));
+        ui.b.btnLay.addEventListener('click', () => setBet('lay'));
+
+        function setBet(type) {
+            bet.type = type; bet.odd = ODDS[type];
+            ui.b.btnBack.classList.remove('bf-selected-back'); ui.b.btnLay.classList.remove('bf-selected-lay');
+            ui.b.slip.classList.remove('hidden');
+
+            if(type === 'back') {
+                ui.b.btnBack.classList.add('bf-selected-back');
+                ui.b.typeLbl.innerText = t('SLIP_TYPE_BACK'); ui.b.typeLbl.style.backgroundColor = "var(--bf-back)"; ui.b.typeLbl.style.color = "var(--bf-back-text)";
+                ui.b.eduBox.style.borderLeftColor = "var(--bf-back-border)";
+            } else {
+                ui.b.btnLay.classList.add('bf-selected-lay');
+                ui.b.typeLbl.innerText = t('SLIP_TYPE_LAY'); ui.b.typeLbl.style.backgroundColor = "var(--bf-lay)"; ui.b.typeLbl.style.color = "var(--bf-lay-text)";
+                ui.b.eduBox.style.borderLeftColor = "var(--bf-lay-border)";
+            }
+            ui.b.oddVal.innerText = bet.odd.toFixed(2);
+            calc();
+        }
+
+        ui.b.slider.addEventListener('input', (e) => { bet.perc = parseInt(e.target.value); bet.stake = bankroll * (bet.perc / 100); calc(); });
+        document.querySelectorAll('.quick-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                let perc = parseInt(e.target.dataset.val); ui.b.slider.value = perc; bet.perc = perc;
+                bet.stake = bankroll * (perc / 100); calc();
+            });
+        });
+
+        function calc() {
+            ui.b.sliderPerc.innerText = `Stake: ${bet.perc}%`;
+            if(!bet.type || bet.stake <= 0) {
+                ui.b.stakeVal.innerText = "€0.00"; ui.b.liabVal.innerText = "€0.00"; ui.b.profVal.innerText = "€0.00";
+                ui.b.riskBar.style.width = "0%"; ui.b.btnPlace.disabled = true; ui.b.btnPlace.innerText = t('PLACE_BET');
+                ui.b.eduTxt.innerHTML = t('SLIP_EDU_DEF'); return;
+            }
+
+            if(bet.type === 'back') { bet.liab = bet.stake; bet.gross = bet.stake * (bet.odd - 1); } 
+            else { bet.liab = bet.stake * (bet.odd - 1); bet.gross = bet.stake; }
+            bet.net = bet.gross * (1 - COMM);
+
+            ui.b.stakeVal.innerText = `€${bet.stake.toFixed(2)}`;
+            ui.b.liabVal.innerText = `€${bet.liab.toFixed(2)}`;
+            ui.b.profVal.innerText = `€${bet.net.toFixed(2)}`;
+
+            let rP = (bet.liab / bankroll) * 100;
+            ui.b.riskBar.style.width = `${Math.min(rP, 100)}%`;
+            ui.b.riskBar.style.backgroundColor = rP <= 30 ? "#00ff44" : (rP <= 70 ? "#fbbf24" : "#ef4444");
+
+            ui.b.eduTxt.innerHTML = fStr(bet.type === 'back' ? t('TIP_BACK') : t('TIP_LAY'), { stake: bet.stake.toFixed(2), liab: bet.liab.toFixed(2), odd: bet.odd.toFixed(2) });
+
+            if(bet.liab > bankroll) {
+                ui.b.liabVal.style.color = "#dc2626"; ui.b.btnPlace.disabled = true; ui.b.btnPlace.innerText = t('INSUFF_FUNDS');
+            } else {
+                ui.b.liabVal.style.color = "#ef4444"; ui.b.btnPlace.disabled = false; ui.b.btnPlace.innerText = t('PLACE_BET');
+            }
+        }
+
+        // Tasto Piazzata (Ottimizzato e infallibile)
+        ui.b.btnPlace.onclick = function(e) {
+            e.preventDefault();
+            if(this.disabled) return;
+            showScreen('none');
+            startGame();
+        };
+
+        function generateTutorialMath(isBack, isGoal, p) {
+            const arrow = `<svg class="w-4 h-4 text-[#2b82c9] mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>`;
+            let html = '';
+
+            if (isBack) {
+                if (isGoal) {
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('RES_TXT')}: <span class="text-[#16a34a]">${t('GOL')}</span></b><br><span class="text-[10px] text-gray-500 leading-tight block mt-0.5">${t('TUT_B_WON')}</span></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('GROSS_TXT')}:</b> €${p.stake} × (${p.odd} - 1) = <b>€${p.gross}</b></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('COMM_TXT')}:</b> <b class="text-red-500">-€${p.comm}</b></div></div>`;
+                } else {
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('RES_TXT')}: <span class="text-red-600">${t('OUT')}</span></b><br><span class="text-[10px] text-gray-500 leading-tight block mt-0.5">${t('TUT_B_LOST')}</span></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('LOSS_TXT')}:</b> <b class="text-red-500">-€${p.liab}</b></div></div>`;
+                }
+            } else {
+                if (!isGoal) {
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('RES_TXT')}: <span class="text-[#16a34a]">${t('OUT')}</span></b><br><span class="text-[10px] text-gray-500 leading-tight block mt-0.5">${t('TUT_L_WON')}</span></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('GROSS_TXT')}:</b> <b>+€${p.gross}</b> <span class="text-[10px] text-gray-500 font-normal"></span></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('COMM_TXT')}:</b> <b class="text-red-500">-€${p.comm}</b></div></div>`;
+                } else {
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('RES_TXT')}: <span class="text-red-600">${t('GOL')}</span></b><br><span class="text-[10px] text-gray-500 leading-tight block mt-0.5">${t('TUT_L_LOST')}</span></div></div>`;
+                    html += `<div class="flex items-start gap-2">${arrow}<div class="text-xs text-gray-700"><b>${t('LOSS_TXT')}:</b> €${p.stake} × (${p.odd} - 1) = <b class="text-red-500">-€${p.liab}</b></div></div>`;
+                }
+            }
+            return html;
+        }
+
+        function resolve(isGoal) {
+            let win = false, pnl = 0, isBack = bet.type === 'back';
+            const p = { odd: bet.odd.toFixed(2), stake: bet.stake.toFixed(2), liab: bet.liab.toFixed(2), gross: bet.gross.toFixed(2), comm: (bet.gross * COMM).toFixed(2), net: bet.net.toFixed(2) };
+
+            ui.r.act.innerHTML = fStr(isBack ? t('ACT_BACK') : t('ACT_LAY'), p);
+
+            if(isBack) {
+                if(isGoal) { win = true; pnl = bet.net; } else { win = false; pnl = -bet.liab; }
+            } else {
+                if(!isGoal) { win = true; pnl = bet.net; } else { win = false; pnl = -bet.liab; }
+            }
+            
+            ui.r.math.innerHTML = generateTutorialMath(isBack, isGoal, p);
+
+            bankroll += pnl;
+            ui.r.brBox.classList.add('hidden');
+            if(bankroll <= 0.01) { bankroll = 100.00; ui.r.brBox.classList.remove('hidden'); ui.r.brTxt.innerHTML = t('BANKRUPT'); }
+            updateBank();
+
+            if (win) {
+                ui.r.banner.innerText = t('RECAP_WIN');
+                ui.r.banner.className = "w-full py-3 text-center bg-[#16a34a] text-white font-black text-sm uppercase tracking-widest";
+                ui.r.pnl.style.color = "#16a34a"; 
+            } else {
+                ui.r.banner.innerText = t('RECAP_LOSS');
+                ui.r.banner.className = "w-full py-3 text-center bg-gray-800 text-white font-black text-sm uppercase tracking-widest";
+                ui.r.pnl.style.color = "#dc2626"; 
+            }
+            
+            ui.r.pnl.innerText = `${pnl >= 0 ? '+' : ''}€${Math.abs(pnl).toFixed(2)}`;
+            ui.r.bank.innerText = `€${bankroll.toFixed(2)}`;
+
+            setTimeout(() => showScreen(ui.screens.recap), 2000);
+        }
+
+        // --- 5. EVENTI ALTRI PULSANTI ---
+        document.getElementById('btn-start').onclick = () => { showScreen(ui.screens.bet); resetSlip(); };
+        ui.r.btnNext.onclick = () => { showScreen(ui.screens.bet); resetSlip(); };
+        
+        document.getElementById('btn-reset-hud').onclick = (e) => { e.stopPropagation(); bankroll = 100.00; updateBank(); };
+        document.getElementById('btn-reset-bet').onclick = (e) => { e.stopPropagation(); bankroll = 100.00; updateBank(); calc(); };
+
+        function resetSlip() {
+            ui.b.slip.classList.add('hidden'); ui.b.btnBack.classList.remove('bf-selected-back'); ui.b.btnLay.classList.remove('bf-selected-lay');
+            ui.b.slider.value = 0; bet.stake = 0; bet.type = null; bet.perc = 0; ui.b.sliderPerc.innerText = "0%";
+            ui.b.eduTxt.innerText = t('SLIP_EDU_DEF'); ui.b.btnPlace.disabled = true; ui.b.btnPlace.innerText = t('PLACE_BET');
+        }
+
+        // LINGUE
+        function setLanguage(l) {
+            currentLang = l;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('lang-active', b.dataset.lang === l));
+            
+            document.getElementById('main-title').innerHTML = t('TITLE') + `<br><span class="text-[#00ff44]">ACADEMY</span>`;
+            document.getElementById('menu-sub').innerText = t('MENU_SUB'); document.getElementById('btn-start').innerText = t('START');
+            
+            ui.game.scoreLbl.innerText = t('HUD_SCORE'); ui.game.bankLbl.innerText = t('HUD_BANK'); ui.game.tapMsg.innerText = t('HUD_TAP');
+            
+            document.getElementById('bet-market').innerText = t('MKT_TITLE'); document.getElementById('bet-avail').innerText = t('MKT_AVAIL');
+            document.getElementById('bet-lbl-back').innerText = t('BTN_BACK'); document.getElementById('bet-lbl-lay').innerText = t('BTN_LAY');
+            
+            ui.b.typeLbl.innerText = t('SLIP_SEL'); ui.b.oddLbl.innerText = t('SLIP_ODD');
+            ui.b.stakeLbl.innerText = t('SLIP_STAKE'); ui.b.liabLbl.innerText = t('SLIP_LIAB'); ui.b.profLbl.innerText = t('SLIP_PROF');
+            if(ui.b.btnPlace.disabled) ui.b.btnPlace.innerText = t('PLACE_BET');
+            
+            ui.r.mathLbl.innerText = t('RECAP_MATH_LBL'); 
+            ui.r.pnlLbl.innerText = t('RECAP_PNL_LBL'); ui.r.newBankLbl.innerText = t('RECAP_NEW_BANK'); ui.r.btnNext.innerText = t('NEXT_KICK');
+
+            if (bet.type) {
+                ui.b.typeLbl.innerText = bet.type === 'back' ? t('SLIP_TYPE_BACK') : t('SLIP_TYPE_LAY');
+                calc();
+            } else {
+                ui.b.eduTxt.innerText = t('SLIP_EDU_DEF');
+            }
+        }
+        document.querySelectorAll('.lang-btn').forEach(b => b.addEventListener('pointerdown', (e) => { e.preventDefault(); setLanguage(e.target.dataset.lang); }));
+
+        // --- 6. AUDIO & GIOCO ---
+        let audioCtx;
+        function playSfx(freq, type='sine', dur=0.1) {
+            if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime + dur);
+        }
+
+        const canvas = document.getElementById('gameCanvas'); const ctx = canvas.getContext('2d', { alpha: false });
+        let dpr = Math.min(window.devicePixelRatio || 1, 2); let w, h;
+        let power = 0, pDir = 1, aimH = 50, hDir = 1, aimV = 50, vDir = 1;
+        const ZONE_PERFECT = 18; 
+        let isPerfect = false;
+
+        const ball = { ax:0, ay:0, x:0, y:0, z:0, vx:0, vy:0, vz:0, spin:0, r:0, trail:[], state: 'idle' };
+        const goal = { x:0, y:0, w:0, h:0 }; const hands = { x:0, y:0, tx:0, ty:0, w:0, h:0 };
+
+        function resize() {
+            w = window.innerWidth; h = window.innerHeight; canvas.width = w * dpr; canvas.height = h * dpr; ctx.scale(dpr, dpr);
+            goal.w = Math.min(w * 0.75, 450); goal.h = goal.w * 0.45; goal.x = w/2 - goal.w/2; goal.y = h * 0.28;
+            hands.w = goal.w * 0.22; hands.h = hands.w * 0.8; hands.x = w/2; hands.y = goal.y + goal.h/2;
+            ball.r = Math.min(w * 0.065, 24); ball.ax = w/2; ball.ay = h * 0.85;
+        }
+        window.addEventListener('resize', resize); resize();
+
+        let stateStartTime = 0;
+        function startGame() {
+            state = S.POWER; stateStartTime = performance.now();
+            ui.game.touch.classList.add('touch-active');
+            
+            ball.trail = []; ball.z = 0; ball.state = 'idle'; ball.ax = w/2; ball.ay = h * 0.85; hands.x = w/2; hands.y = goal.y + goal.h/2;
+            ui.game.msg.innerText = t('PHASE_PWR'); ui.game.msg.style.opacity = 1; ui.game.res.style.opacity = 0;
+            
+            ui.game.hBarCont.classList.remove('hidden'); ui.game.vBarCont.classList.add('hidden');
+            ui.game.fill.style.transform = `scaleX(0)`; ui.game.target.style.display = 'none'; ui.game.cursor.style.display = 'none';
+            
+            power = 10; pDir = 1; aimH = 50; hDir = 1; aimV = 50; vDir = 1;
+        }
+
+        function handleGameInput(e) {
+            if(e && e.type !== 'keydown') { e.preventDefault(); e.stopPropagation(); }
+            if(state !== S.POWER && state !== S.AIM_H && state !== S.AIM_V) return;
+            if(performance.now() - stateStartTime < 150) return;
+
+            if(state === S.POWER) {
+                state = S.AIM_H; ui.game.msg.innerText = t('PHASE_AIM_H');
+                ui.game.fill.style.display = 'none'; ui.game.target.style.display = 'block'; ui.game.cursor.style.display = 'block';
+                playSfx(440); stateStartTime = performance.now();
+            } else if (state === S.AIM_H) {
+                state = S.AIM_V; ui.game.msg.innerText = t('PHASE_AIM_V');
+                ui.game.hBarCont.classList.add('hidden'); ui.game.vBarCont.classList.remove('hidden');
+                if(Math.abs(aimH - 50) <= ZONE_PERFECT) playSfx(880); else playSfx(550); stateStartTime = performance.now();
+            } else if (state === S.AIM_V) {
+                state = S.SHOOTING; ui.game.touch.classList.remove('touch-active'); ui.game.msg.style.opacity = 0;
+                ui.game.vBarCont.classList.add('hidden');
+                if(Math.abs(aimV - 50) <= ZONE_PERFECT) playSfx(880);
+                launchBall();
+            }
+        }
+
+        ui.game.touch.addEventListener('pointerdown', handleGameInput);
+        window.addEventListener('keydown', (e) => { if(e.code === 'Space') { if(state === S.POWER || state === S.AIM_H || state === S.AIM_V) { e.preventDefault(); handleGameInput(e); } } });
+
+        function launchBall() {
+            isPerfect = power >= 70 && Math.abs(aimH - 50) <= ZONE_PERFECT && Math.abs(aimV - 50) <= ZONE_PERFECT;
+            const force = 20 + (power/100)*15; const hAng = (aimH - 50)/50;
+            ball.vz = force; ball.vx = hAng * (force * 0.45); ball.vy = -(force * 0.25) - (1 - (aimV/100)) * (force * 0.5); ball.spin = hAng * 25; ball.x = 0; ball.y = 0; ball.z = 0;
+            playSfx(150, 'triangle', 0.5);
+
+            let tX = w/2 + hAng * (goal.w * 0.6); let tY = goal.y + (aimV/100) * goal.h;
+            setTimeout(() => {
+                if(isPerfect) { hands.tx = w * (hAng > 0 ? 0.2 : 0.8); hands.ty = goal.y + goal.h * 0.2; } 
+                else { 
+                    if (Math.random() < 0.35) { hands.tx = w/2 - (hAng * goal.w * 0.5); hands.ty = goal.y + goal.h * 0.8; }
+                    else { let err = (1 - (power/100)) * 180; hands.tx = tX + (Math.random()-0.5)*err; hands.ty = tY + (Math.random()-0.5)*err; }
+                }
+            }, 50);
+        }
+
+        function checkPhysics(dt) {
+            if(state !== S.SHOOTING && ball.state !== 'saved') return;
+            ball.vx += ball.spin * ball.vz * 0.4 * dt; ball.vy += 10 * dt; ball.x += ball.vx * dt; ball.y += ball.vy * dt; ball.z += ball.vz * dt;
+            const scale = 1 / (1 + ball.z * 0.05); ball.ax = w/2 + (ball.x * 35 * scale); ball.ay = h * 0.85 + (ball.y * 35 * scale);
+
+            if(ball.z >= 18.0 && state === S.SHOOTING) {
+                state = S.RECAP; 
+                let inG = ball.ax > goal.x + 10 && ball.ax < goal.x + goal.w - 10 && ball.ay > goal.y + 10 && ball.ay < goal.y + goal.h;
+                let isGoal = false;
+                if (Math.sqrt((ball.ax - hands.x)**2 + (ball.ay - hands.y)**2) < hands.w * 0.6 && !isPerfect) {
+                    ball.state = 'saved'; ball.vz = -5; ball.vy = -8; ui.game.res.innerText = t('RES_SAVE'); ui.game.res.style.color = "#fff";
+                } else if (inG) {
+                    isGoal = true; score++; ui.game.score.innerText = score; ui.game.res.innerText = isPerfect ? t('RES_PERF') : t('RES_GOAL'); ui.game.res.style.color = "#00ff44"; playSfx(440, 'square', 0.5);
+                } else { ui.game.res.innerText = t('RES_MISS'); ui.game.res.style.color = "#888"; }
+                ui.game.res.style.opacity = 1; resolve(isGoal);
+            }
+        }
+
+        function ease(v) { return (Math.sin((v/100 * Math.PI) - Math.PI/2) + 1) * 50; }
+
+        let lastDraw = 0;
+        function draw(tStamp) {
+            let dt = Math.min((tStamp - lastDraw) / 1000, 0.05); lastDraw = tStamp;
+            const spd = 60; 
+
+            if(state === S.POWER) { power += spd * pDir * dt; if(power>100||power<0) pDir*=-1; ui.game.fill.style.transform = `scaleX(${ease(power)/100})`; ui.game.fill.style.transformOrigin = 'left'; }
+            if(state === S.AIM_H) { aimH += spd * 1.2 * hDir * dt; if(aimH>100||aimH<0) hDir*=-1; ui.game.cursor.style.left = ease(aimH)+'%'; }
+            if(state === S.AIM_V) { aimV += spd * 1.4 * vDir * dt; if(aimV>100||aimV<0) vDir*=-1; ui.game.vCursor.style.top = ease(aimV)+'%'; }
+
+            ctx.fillStyle = '#061a0d'; ctx.fillRect(0,0,w,h);
+            ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(goal.x, goal.y+goal.h); ctx.lineTo(goal.x, goal.y); ctx.lineTo(goal.x+goal.w, goal.y); ctx.lineTo(goal.x+goal.w, goal.y+goal.h); ctx.stroke();
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1; ctx.beginPath();
+            for(let i=0; i<=16; i++) { let px = goal.x+(goal.w/16)*i; ctx.moveTo(px,goal.y); ctx.lineTo(px,goal.y+goal.h); }
+            for(let i=0; i<=8; i++) { let py = goal.y+(goal.h/8)*i; ctx.moveTo(goal.x,py); ctx.lineTo(goal.x+goal.w,py); } ctx.stroke();
+
+            if(state === S.SHOOTING) { hands.x += (hands.tx - hands.x) * 8 * dt; hands.y += (hands.ty - hands.y) * 8 * dt; }
+            ctx.save(); ctx.translate(hands.x, hands.y); ctx.fillStyle = '#fff'; ctx.font = `${hands.w}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("👐", 0, 0); ctx.restore();
+
+            checkPhysics(dt);
+            if(state >= S.POWER && ball.z >= 0) {
+                if(state === S.SHOOTING || ball.state === 'saved') {
+                    ctx.save(); let shadowScale = Math.max(0.1, 1 - (ball.y/-10)); let shadowAlpha = Math.max(0.1, 0.6 - (ball.z/40)); 
+                    ctx.fillStyle = `rgba(0,0,0,${shadowAlpha})`; ctx.beginPath(); ctx.ellipse(ball.ax, h * 0.85 - (ball.z*1.8), ball.r * shadowScale, ball.r * 0.4 * shadowScale, 0, 0, Math.PI*2); ctx.fill(); ctx.restore();
+                }
+
+                if(state === S.SHOOTING || ball.state === 'saved') { ball.trail.push({x: ball.ax, y: ball.ay, r: ball.r * (1-(ball.z/40))}); if(ball.trail.length > 10) ball.trail.shift(); }
+                ctx.beginPath(); ball.trail.forEach((p, i) => { ctx.globalAlpha = i/10 * 0.3; ctx.fillStyle = isPerfect ? '#00ff44' : '#ffffff'; ctx.moveTo(p.x+p.r, p.y); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); }); ctx.fill(); ctx.globalAlpha = 1.0;
+                
+                ctx.save(); ctx.translate(ball.ax, ball.ay); ctx.rotate(ball.z * ball.spin * 0.015);
+                ctx.font = `${ball.r * Math.max(0.3, 1-(ball.z/40)) * 2.3}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText("⚽", 0, 0); ctx.restore();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        setLanguage('en'); updateBank(); showScreen(ui.screens.menu); requestAnimationFrame(draw);
+    </script>
+</body>
+</html>
+
