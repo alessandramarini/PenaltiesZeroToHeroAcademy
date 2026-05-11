@@ -78,6 +78,36 @@
         .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); cursor: pointer; }
         .btn-primary:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 255, 68, 0.5); }
 
+        /* Joystick Pulsante Aura Oro Neon */
+        .gold-neon-pulse {
+            border: 2px solid #FFD700;
+            box-shadow: 
+                0 0 15px #FFD700,
+                0 0 25px #FFD700,
+                inset 0 0 15px rgba(255,215,0,0.4);
+            color: #FFD700;
+            animation: pulseGold 2s infinite ease-in-out;
+            transition: all 0.2s;
+        }
+        .gold-neon-pulse:hover {
+            transform: scale(1.08);
+            box-shadow: 
+                0 0 25px #FFD700,
+                0 0 45px #FFD700,
+                inset 0 0 25px rgba(255,215,0,0.6);
+            animation: none;
+        }
+        .gold-neon-pulse:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px #FFD700, inset 0 0 10px rgba(255,215,0,0.3);
+        }
+        
+        @keyframes pulseGold {
+            0% { transform: scale(1); box-shadow: 0 0 15px #FFD700, 0 0 20px rgba(255,215,0,0.5), inset 0 0 15px rgba(255,215,0,0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 25px #FFD700, 0 0 45px #FFD700, 0 0 60px rgba(255,140,0,0.7), inset 0 0 25px rgba(255,215,0,0.7); }
+            100% { transform: scale(1); box-shadow: 0 0 15px #FFD700, 0 0 20px rgba(255,215,0,0.5), inset 0 0 15px rgba(255,215,0,0.4); }
+        }
+
         /* Bottoni Lingua */
         .lang-btn {
             padding: 0; border-radius: 6px; border: 3px solid transparent; transition: all 0.2s;
@@ -153,26 +183,34 @@
     <!-- Zona di tocco invisibile per fermare la barra -->
     <div id="touch-zone"></div>
 
-    <!-- SCHERMATA 1: SELEZIONE LINGUA -->
+    <!-- SCHERMATA 1: SELEZIONE LINGUA E AVVIO -->
     <div id="screen-lang" class="ui-layer ui-active p-4">
         <div class="glass-panel p-6 md:p-8 w-full max-w-md md:max-w-lg flex flex-col items-center animate-slide-up">
             <h1 class="text-white font-black text-[clamp(2rem,6vw,3rem)] mb-2 text-center uppercase tracking-tight drop-shadow-md leading-none">Zero To Hero</h1>
             <p class="text-gray-400 text-[clamp(0.75rem,2vw,1rem)] mb-6 md:mb-10 text-center uppercase tracking-[0.3em]">Academy</p>
             
-            <div class="flex gap-4 md:gap-6 mb-8 md:mb-12">
+            <div class="flex gap-4 md:gap-6 mb-8 md:mb-10">
                 <button class="lang-btn active" data-lang="it"><img src="https://flagcdn.com/w160/it.png" alt="Italiano"></button>
                 <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/w160/gb.png" alt="English"></button>
                 <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/w160/es.png" alt="Español"></button>
                 <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/w160/br.png" alt="Português"></button>
             </div>
             
-            <button id="btn-start" class="btn-primary mt-auto">INIZIA ACCADEMIA</button>
+            <!-- Joystick Pulsante Oro Neon -->
+            <div class="mt-auto flex flex-col items-center gap-4">
+                <button id="btn-start" class="flex items-center justify-center w-[clamp(80px,15vw,110px)] h-[clamp(80px,15vw,110px)] rounded-full gold-neon-pulse cursor-pointer bg-black/50 backdrop-blur-sm" title="INIZIA ACCADEMIA">
+                    <!-- Icona Joystick SVG in HD -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 md:w-16 md:h-16" fill="currentColor" viewBox="0 0 256 256">
+                        <path d="M244,92.54A48,48,0,0,0,200.73,56H55.27A48,48,0,0,0,12,92.54c-7.39,23.36-11.85,55,16,77.58A40,40,0,0,0,53.47,176a40.38,40.38,0,0,0,29.35-12.8L95,149.27a8,8,0,0,1,5.92-2.7h54.16a8,8,0,0,1,5.92,2.7l12.18,13.93A40.38,40.38,0,0,0,202.53,176a40,40,0,0,0,25.43-5.88c27.89-22.61,23.43-54.22,16-77.58ZM140,96a12,12,0,1,1,12,12A12,12,0,0,1,140,96Zm32-20a12,12,0,1,1,12,12A12,12,0,0,1,172,76Zm0,40a12,12,0,1,1,12,12A12,12,0,0,1,172,116ZM92,100H80v12a8,8,0,0,1-16,0V100H52a8,8,0,0,1,0-16H64V72a8,8,0,0,1,16,0V84H92a8,8,0,0,1,0,16Z"></path>
+                    </svg>
+                </button>
+                <span id="lbl-start-text" class="text-[#FFD700] font-black text-[clamp(0.85rem,2.5vw,1.2rem)] uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">INIZIA ACCADEMIA</span>
+            </div>
         </div>
     </div>
 
     <!-- SCHERMATA 2: HUD DI GIOCO (Barre Potenza e Mirino) -->
     <div id="screen-game" class="ui-layer">
-        <!-- Spostato l'avviso per evitare sovrapposizioni su schermi corti -->
         <div class="absolute top-[12vh] text-center w-full">
             <p id="hud-instruction" class="text-white font-bold text-[clamp(0.7rem,2vw,1rem)] tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-4 py-2 md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg transition-all duration-300">
                 Tocca, Clicca o Spazio per tirare
@@ -197,18 +235,14 @@
 
     <!-- SCHERMATA 3: RISULTATO E MATEMATICA -->
     <div id="screen-result" class="ui-layer p-4">
-        <!-- Pannello principale elastico -->
         <div class="glass-panel w-full max-w-md md:max-w-2xl animate-slide-up pb-6 pt-4 px-4 md:px-8">
             
-            <!-- Header (Fisso in alto) -->
             <div class="flex-shrink-0 text-center mb-4">
                 <h2 id="res-title" class="text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
                 <p id="res-subtitle" class="text-gray-300 text-[clamp(0.65rem,2vw,0.875rem)] uppercase tracking-[0.2em]">Rigore calciato</p>
             </div>
 
-            <!-- Contenitore Scrollabile per le info (evita la fuoriuscita di contenuti su schermi piccoli) -->
             <div class="flex-1 min-h-0 overflow-y-auto custom-scroll w-full flex flex-col gap-4 mb-4 pr-1">
-                
                 <div class="w-full bg-black/50 rounded-xl p-3 text-center border border-white/10 shadow-inner flex-shrink-0">
                     <p class="text-[clamp(0.5rem,1.5vw,0.7rem)] text-gray-400 uppercase tracking-widest mb-1" id="lbl-scenario">Scenario di Rischio</p>
                     <p class="text-white font-bold text-[clamp(0.75rem,2vw,1rem)]" id="lbl-bankroll">Partendo da 100€ • Puntando 1€ (1%)</p>
@@ -336,7 +370,7 @@
         
         function updateTexts() {
             const t = i18n[currentLang];
-            document.getElementById('btn-start').innerText = t.start;
+            document.getElementById('lbl-start-text').innerText = t.start;
             document.getElementById('hud-instruction').innerText = t.tap;
             document.getElementById('btn-next').innerText = t.next;
             document.getElementById('lbl-scenario').innerText = t.scenario;
