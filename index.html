@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#061a0d">
     <title>Zero To Hero - Betting Academy</title>
     
-    <!-- Tailwind CSS (via CDN per immediatezza) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Google Fonts -->
@@ -24,13 +24,14 @@
             --bg-dark: #061a0d;
         }
 
-        /* Setup base per evitare scroll elastico su mobile */
+        /* Setup base anti-scroll e anti-zoom su mobile */
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; background-color: var(--bg-dark);
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none; -webkit-user-select: none;
+            touch-action: none; /* Previene gesture di sistema interferenti */
         }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
@@ -38,70 +39,96 @@
         /* Canvas Background */
         #gameCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+            /* Forza l'accelerazione hardware */
+            transform: translateZ(0); 
         }
 
-        /* Overlay UI */
+        /* Overlay UI - Centratura perfetta e gestione area sicura (notch) */
         .ui-layer {
             position: absolute; inset: 0; z-index: 10;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            pointer-events: none; /* Lascia passare i click al layer inferiore di default */
+            pointer-events: none;
             opacity: 0; transition: opacity 0.3s ease-in-out;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
         .ui-active { opacity: 1; pointer-events: auto; }
 
-        /* Effetto Vetro (Glassmorphism) */
+        /* Effetto Vetro (Glassmorphism) - Altezza massima per non fuoriuscire dallo schermo */
         .glass-panel {
             background: rgba(10, 29, 18, 0.85);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1);
+            max-height: 95vh;
+            display: flex; flex-direction: column;
         }
 
         /* Bottoni Generici */
         .btn-primary {
             background: var(--neon-green); color: #000;
             font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
-            padding: 1.25rem 2.5rem; border-radius: 9999px;
+            padding: clamp(0.75rem, 3vh, 1.25rem) 2.5rem; border-radius: 9999px;
             box-shadow: 0 0 20px rgba(0, 255, 68, 0.3);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%; max-width: 320px;
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            flex-shrink: 0; /* Previene lo schiacciamento se lo spazio manca */
         }
         .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); cursor: pointer; }
         .btn-primary:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 255, 68, 0.5); }
 
         /* Bottoni Lingua */
         .lang-btn {
-            font-size: 2.5rem; padding: 0.5rem; border-radius: 50%;
-            border: 2px solid transparent; transition: all 0.2s;
-            filter: grayscale(80%); cursor: pointer;
+            padding: 0; border-radius: 6px; border: 3px solid transparent; transition: all 0.2s;
+            opacity: 0.5; filter: grayscale(80%); cursor: pointer; overflow: hidden;
+            width: clamp(60px, 12vw, 80px); height: clamp(40px, 8vw, 53px); display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-        .lang-btn:hover { filter: grayscale(30%); transform: scale(1.05); }
+        .lang-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .lang-btn:hover { opacity: 0.8; filter: grayscale(30%); transform: scale(1.05); }
         .lang-btn.active {
-            filter: grayscale(0%);
+            opacity: 1; filter: grayscale(0%);
             border-color: var(--neon-green);
-            background: rgba(0, 255, 68, 0.1);
             transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(0,255,68,0.5);
         }
 
-        /* Barra della Potenza */
-        .power-bar-container {
-            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
-            width: 85%; max-width: 600px; height: 1.75rem;
-            background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.8);
+        /* Barre di Gioco (Potenziometri) */
+        .hud-bar-wrapper {
+            position: absolute;
+            background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.5);
             border-radius: 999px; overflow: hidden;
             box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            display: none;
         }
-        .power-bar-fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444);
-            transition: width 0.05s linear;
+        .hud-bar-wrapper.active {
+            border-color: var(--neon-green);
+            box-shadow: 0 0 15px rgba(0,255,68,0.4);
         }
-        .power-target {
-            position: absolute; top: 0; bottom: 0; left: 75%; width: 15%;
-            background: rgba(255,255,255,0.3); border-left: 3px solid white; border-right: 3px solid white;
+        .hud-h {
+            bottom: 25vh; left: 50%; transform: translateX(-50%);
+            width: 75%; max-width: 500px; height: clamp(1.25rem, 4vh, 1.75rem);
         }
+        .hud-v {
+            right: 5vw; top: 40%; transform: translateY(-50%);
+            height: 45vh; max-height: 400px; width: clamp(1.25rem, 4vw, 1.75rem);
+        }
+        .hud-fill-h { height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444); transition: opacity 0.3s; }
+        
+        .hud-target-h { position: absolute; top: 0; bottom: 0; left: 35%; width: 30%; background: rgba(0,255,68,0.3); border-left: 2px solid white; border-right: 2px solid white; display: none; }
+        .hud-cursor-h { position: absolute; top: -2px; bottom: -2px; width: 6px; background: white; left: 50%; transform: translateX(-50%); box-shadow: 0 0 10px white; border-radius: 4px; display: none; z-index: 3; }
+        
+        .hud-target-v { position: absolute; left: 0; right: 0; top: 35%; height: 30%; background: rgba(0,255,68,0.3); border-top: 2px solid white; border-bottom: 2px solid white; }
+        .hud-cursor-v { position: absolute; left: -2px; right: -2px; height: 6px; background: white; top: 50%; transform: translateY(-50%); box-shadow: 0 0 10px white; border-radius: 4px; z-index: 3; }
+
+        .hud-text {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 900; font-size: clamp(0.65rem, 2.5vw, 0.9rem);
+            text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em;
+        }
+        .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
 
         /* Area di tap a tutto schermo per il gioco */
         #touch-zone {
@@ -111,6 +138,11 @@
         /* Animazioni Custom */
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Scrollbar stilizzata per i pannelli interni */
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
     </style>
 </head>
 <body>
@@ -122,123 +154,185 @@
     <div id="touch-zone"></div>
 
     <!-- SCHERMATA 1: SELEZIONE LINGUA -->
-    <div id="screen-lang" class="ui-layer ui-active px-4">
-        <div class="glass-panel p-8 w-[95%] sm:w-full max-w-md md:max-w-lg flex flex-col items-center animate-slide-up">
-            <h1 class="text-white font-black text-4xl mb-2 text-center uppercase tracking-tight drop-shadow-md">Zero To Hero</h1>
-            <p class="text-gray-400 text-sm md:text-base mb-10 text-center uppercase tracking-[0.3em]">Academy</p>
+    <div id="screen-lang" class="ui-layer ui-active p-4">
+        <div class="glass-panel p-6 md:p-8 w-full max-w-md md:max-w-lg flex flex-col items-center animate-slide-up">
+            <h1 class="text-white font-black text-[clamp(2rem,6vw,3rem)] mb-2 text-center uppercase tracking-tight drop-shadow-md leading-none">Zero To Hero</h1>
+            <p class="text-gray-400 text-[clamp(0.75rem,2vw,1rem)] mb-6 md:mb-10 text-center uppercase tracking-[0.3em]">Academy</p>
             
-            <div class="flex gap-8 mb-12">
-                <button class="lang-btn active" data-lang="it">🇮🇹</button>
-                <button class="lang-btn" data-lang="en">🇬🇧</button>
-                <button class="lang-btn" data-lang="es">🇪🇸</button>
+            <div class="flex gap-4 md:gap-6 mb-8 md:mb-12">
+                <button class="lang-btn active" data-lang="it"><img src="https://flagcdn.com/w160/it.png" alt="Italiano"></button>
+                <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/w160/gb.png" alt="English"></button>
+                <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/w160/es.png" alt="Español"></button>
+                <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/w160/br.png" alt="Português"></button>
             </div>
             
-            <button id="btn-start" class="btn-primary">INIZIA A GIOCARE</button>
+            <button id="btn-start" class="btn-primary mt-auto">INIZIA ACCADEMIA</button>
         </div>
     </div>
 
-    <!-- SCHERMATA 2: HUD DI GIOCO (Barra Potenza) -->
+    <!-- SCHERMATA 2: HUD DI GIOCO (Barre Potenza e Mirino) -->
     <div id="screen-game" class="ui-layer">
-        <div class="absolute top-10 text-center w-full">
-            <p id="hud-instruction" class="text-white font-bold text-sm md:text-base tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-6 py-3 rounded-full backdrop-blur-md shadow-lg">
+        <!-- Spostato l'avviso per evitare sovrapposizioni su schermi corti -->
+        <div class="absolute top-[12vh] text-center w-full">
+            <p id="hud-instruction" class="text-white font-bold text-[clamp(0.7rem,2vw,1rem)] tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-4 py-2 md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg transition-all duration-300">
                 Tocca, Clicca o Spazio per tirare
             </p>
         </div>
-        <div class="power-bar-container">
-            <div class="power-target"></div>
-            <div id="power-fill" class="power-bar-fill"></div>
+        
+        <!-- Mirino Orizzontale (Potenza + Direzione) -->
+        <div id="hud-h-wrapper" class="hud-bar-wrapper hud-h">
+            <div id="hud-h-target" class="hud-target-h"></div>
+            <div id="hud-h-fill" class="hud-fill-h"></div>
+            <div id="hud-h-cursor" class="hud-cursor-h"></div>
+            <span id="hud-h-text" class="hud-text">1. POTENZA</span>
+        </div>
+
+        <!-- Mirino Verticale (Altezza) -->
+        <div id="hud-v-wrapper" class="hud-bar-wrapper hud-v">
+            <div id="hud-v-target" class="hud-target-v"></div>
+            <div id="hud-v-cursor" class="hud-cursor-v"></div>
+            <span id="hud-v-text" class="hud-text text-vertical">3. ALTEZZA</span>
         </div>
     </div>
 
     <!-- SCHERMATA 3: RISULTATO E MATEMATICA -->
-    <div id="screen-result" class="ui-layer px-4 py-8">
-        <div class="glass-panel p-6 md:p-8 w-[95%] sm:w-full max-w-md md:max-w-xl flex flex-col items-center animate-slide-up max-h-[90vh] overflow-y-auto">
+    <div id="screen-result" class="ui-layer p-4">
+        <!-- Pannello principale elastico -->
+        <div class="glass-panel w-full max-w-md md:max-w-2xl animate-slide-up pb-6 pt-4 px-4 md:px-8">
             
-            <!-- Esito -->
-            <h2 id="res-title" class="text-white font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-lg">GOL!</h2>
-            <p id="res-subtitle" class="text-gray-300 text-xs md:text-sm uppercase tracking-[0.2em] mb-6">Rigore calciato</p>
-
-            <div class="w-full bg-black/50 rounded-xl p-4 mb-6 text-center border border-white/10 shadow-inner">
-                <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest mb-1" id="lbl-scenario">Scenario di Rischio</p>
-                <p class="text-white font-bold text-sm md:text-base" id="lbl-bankroll">Partendo da 100€ • Puntando 1€ (1%)</p>
+            <!-- Header (Fisso in alto) -->
+            <div class="flex-shrink-0 text-center mb-4">
+                <h2 id="res-title" class="text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
+                <p id="res-subtitle" class="text-gray-300 text-[clamp(0.65rem,2vw,0.875rem)] uppercase tracking-[0.2em]">Rigore calciato</p>
             </div>
 
-            <div class="w-full flex flex-col md:flex-row gap-4 mb-8">
-                <!-- Card BACK (Punta) -->
-                <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-back-light)] shadow-lg transform transition-transform hover:scale-[1.02]">
-                    <div class="bg-[var(--bf-back-light)] px-4 py-3 flex justify-between items-center border-b border-[var(--bf-back)]/20">
-                        <span class="font-black text-[var(--bf-back)] uppercase text-xs md:text-sm">BACK (Punta)</span>
-                        <span class="font-bold text-[var(--bf-back)] text-xs md:text-sm font-mono bg-white/50 px-2 py-1 rounded">Quota 1.29</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-back-res">Esito</span>
-                            <span id="val-back-res" class="font-black text-xl md:text-2xl font-mono leading-none">+€0.28</span>
-                        </div>
-                        <p id="desc-back" class="text-xs text-gray-600 leading-snug">Hai scommesso a favore del gol. Vinci la quota netta (-5% comm).</p>
-                    </div>
+            <!-- Contenitore Scrollabile per le info (evita la fuoriuscita di contenuti su schermi piccoli) -->
+            <div class="flex-1 min-h-0 overflow-y-auto custom-scroll w-full flex flex-col gap-4 mb-4 pr-1">
+                
+                <div class="w-full bg-black/50 rounded-xl p-3 text-center border border-white/10 shadow-inner flex-shrink-0">
+                    <p class="text-[clamp(0.5rem,1.5vw,0.7rem)] text-gray-400 uppercase tracking-widest mb-1" id="lbl-scenario">Scenario di Rischio</p>
+                    <p class="text-white font-bold text-[clamp(0.75rem,2vw,1rem)]" id="lbl-bankroll">Partendo da 100€ • Puntando 1€ (1%)</p>
                 </div>
 
-                <!-- Card LAY (Banca) -->
-                <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-lay-light)] shadow-lg transform transition-transform hover:scale-[1.02]">
-                    <div class="bg-[var(--bf-lay-light)] px-4 py-3 flex justify-between items-center border-b border-[var(--bf-lay)]/20">
-                        <span class="font-black text-[var(--bf-lay)] uppercase text-xs md:text-sm">LAY (Banca)</span>
-                        <span class="font-bold text-[var(--bf-lay)] text-xs md:text-sm font-mono bg-white/50 px-2 py-1 rounded">Quota 1.31</span>
-                    </div>
-                    <div class="p-4 flex-1 flex flex-col justify-between">
-                        <div class="flex justify-between items-end mb-2">
-                            <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-lay-res">Esito</span>
-                            <span id="val-lay-res" class="font-black text-xl md:text-2xl font-mono leading-none">-€1.00</span>
+                <div class="w-full flex flex-col md:flex-row gap-4 flex-shrink-0 pb-2">
+                    <!-- Card BACK (Punta) -->
+                    <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-back-light)] shadow-lg">
+                        <div class="bg-[var(--bf-back-light)] px-3 py-2 flex justify-between items-center border-b border-[var(--bf-back)]/20">
+                            <span class="font-black text-[var(--bf-back)] uppercase text-[clamp(0.7rem,1.5vw,0.875rem)]" id="lbl-b-title">BACK (Punta)</span>
+                            <span class="font-bold text-[var(--bf-back)] text-[clamp(0.6rem,1.2vw,0.75rem)] font-mono bg-white/50 px-2 py-0.5 rounded">@1.29</span>
                         </div>
-                        <p id="desc-lay" class="text-xs text-gray-600 leading-snug">Hai scommesso contro il gol. Devi pagare la responsabilità stabilita.</p>
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <div class="bg-gray-50 rounded p-2 mb-2 border border-gray-100">
+                                <span class="text-gray-400 text-[9px] font-bold uppercase block mb-1" id="lbl-b-math">Calcolo Matematico</span>
+                                <div id="val-back-math" class="text-[11px] font-mono leading-tight text-gray-700"></div>
+                            </div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-b-net">Risultato Netto</span>
+                                <span id="val-back-res" class="font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none"></span>
+                            </div>
+                            <p id="desc-back" class="text-[clamp(0.65rem,1.5vw,0.85rem)] text-gray-600 leading-snug"></p>
+                        </div>
+                    </div>
+
+                    <!-- Card LAY (Banca) -->
+                    <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-lay-light)] shadow-lg">
+                        <div class="bg-[var(--bf-lay-light)] px-3 py-2 flex justify-between items-center border-b border-[var(--bf-lay)]/20">
+                            <span class="font-black text-[var(--bf-lay)] uppercase text-[clamp(0.7rem,1.5vw,0.875rem)]" id="lbl-l-title">LAY (Banca)</span>
+                            <span class="font-bold text-[var(--bf-lay)] text-[clamp(0.6rem,1.2vw,0.75rem)] font-mono bg-white/50 px-2 py-0.5 rounded">@1.31</span>
+                        </div>
+                        <div class="p-3 flex-1 flex flex-col justify-between">
+                            <div class="bg-gray-50 rounded p-2 mb-2 border border-gray-100">
+                                <span class="text-gray-400 text-[9px] font-bold uppercase block mb-1" id="lbl-l-math">Calcolo Matematico</span>
+                                <div id="val-lay-math" class="text-[11px] font-mono leading-tight text-gray-700"></div>
+                            </div>
+                            <div class="flex justify-between items-end mb-2">
+                                <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-l-net">Risultato Netto</span>
+                                <span id="val-lay-res" class="font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none"></span>
+                            </div>
+                            <p id="desc-lay" class="text-[clamp(0.65rem,1.5vw,0.85rem)] text-gray-600 leading-snug"></p>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <button id="btn-next" class="btn-primary">PROSSIMO RIGORE</button>
+            <!-- Footer (Fisso in basso) -->
+            <div class="flex-shrink-0 w-full flex justify-center mt-2">
+                <button id="btn-next" class="btn-primary">PROSSIMO RIGORE</button>
+            </div>
         </div>
     </div>
 
     <!-- SCRIPT LOGICA E RENDER -->
     <script>
-        // --- 1. DIZIONARIO MULTILINGUA ---
+        // --- 1. DIZIONARIO MULTILINGUA (Learning Academy Avanzato) ---
         const i18n = {
             it: {
-                start: "INIZIA A GIOCARE", tap: "Tocca, Clicca o Spazio per tirare", next: "PROSSIMO RIGORE",
+                start: "INIZIA ACCADEMIA", tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza", next: "PROSSIMO RIGORE",
+                step1: "1. POTENZA", step2: "2. DIREZIONE", step3: "3. ALTEZZA",
                 res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna",
-                scenario: "Scenario di Rischio", bankroll: "Partendo da 100€ • Rischio 1€ (1%)",
-                lbl_res: "Variazione Cassa",
-                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
-                desc_b_w: "Puntando 1€ sul GOL vinceresti la vincita netta (dedotta la commissione del 5%).",
-                desc_b_l: "Puntando 1€ sul GOL avresti perso esattamente il tuo rischio di 1€.",
-                desc_l_w: "Bancando il GOL (rischiando 1€) vinci lo stake del puntatore. Netto: +3.06€.",
-                desc_l_l: "Facendo il banco sul GOL, l'evento si è verificato. Paghi la tua responsabilità massima (1€)."
+                scenario: "Lezione di Money Management", bankroll: "Bankroll: 100€ • Rischio: 1€ (1%)",
+                lbl_math: "Calcolo Matematico", lbl_net: "Risultato Netto",
+                b_title: "BACK (PUNTA)", l_title: "LAY (BANCA)",
+                b_win_math: "Stake: 1.00€<br>Lordo: +0.29€<br>Comm (5%): -0.01€", b_win_net: "+€0.28",
+                b_loss_math: "Stake: 1.00€<br>Perso: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
+                l_win_math: "Stake Banco: 3.23€<br>Lordo: +3.23€<br>Comm (5%): -0.16€", l_win_net: "+€3.07",
+                l_loss_math: "Rischio (Liab): 1.00€<br>Pagato: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
+                desc_b_w: "Scommettendo a favore, vinci il profitto calcolato dalla quota, trattenendo il tuo rischio iniziale.",
+                desc_b_l: "Scommettendo a favore, se l'evento non si verifica perdi esattamente lo stake puntato.",
+                desc_l_w: "Facendo il banco, tieni la puntata (Stake) di chi ha scommesso contro di te, dedotte le commissioni.",
+                desc_l_l: "Facendo il banco, l'evento si è verificato. Devi pagare la vincita al giocatore usando il tuo Rischio."
             },
             en: {
-                start: "START PLAYING", tap: "Tap, Click or Space to shoot", next: "NEXT PENALTY",
+                start: "START ACADEMY", tap: "Tap for Power", tap_aim: "Tap for Direction", tap_height: "Tap for Height", next: "NEXT PENALTY",
+                step1: "1. POWER", step2: "2. DIRECTION", step3: "3. HEIGHT",
                 res_goal: "GOAL!", res_saved: "SAVED!", res_miss: "MISSED!", sub_goal: "Penalty Scored", sub_saved: "Keeper blocks it", sub_miss: "Over the bar",
-                scenario: "Risk Scenario", bankroll: "Starting €100 • Risk €1 (1%)",
-                lbl_res: "Bankroll Change",
-                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
-                desc_b_w: "Backing GOAL with €1 wins you the net profit (-5% commission).",
-                desc_b_l: "Backing GOAL with €1 means you lose your exact stake of €1.",
-                desc_l_w: "Laying GOAL (risking €1) wins you the backer's stake. Net: +€3.06.",
-                desc_l_l: "Acting as the bookie, the event happened. You pay your max liability (€1)."
+                scenario: "Risk Management Lesson", bankroll: "Bankroll: €100 • Risk: €1 (1%)",
+                lbl_math: "Math Breakdown", lbl_net: "Net Result",
+                b_title: "BACK (YES)", l_title: "LAY (NO)",
+                b_win_math: "Stake: €1.00<br>Gross: +€0.29<br>Comm (5%): -€0.01", b_win_net: "+€0.28",
+                b_loss_math: "Stake: €1.00<br>Lost: -€1.00<br>&nbsp;", b_loss_net: "-€1.00",
+                l_win_math: "Backer Stake: €3.23<br>Gross: +€3.23<br>Comm (5%): -€0.16", l_win_net: "+€3.07",
+                l_loss_math: "Risk (Liab): €1.00<br>Paid out: -€1.00<br>&nbsp;", l_loss_net: "-€1.00",
+                desc_b_w: "By backing the outcome, you win the profit calculated from the odds and keep your initial stake.",
+                desc_b_l: "By backing the outcome, you lose exactly the stake you risked if the event doesn't happen.",
+                desc_l_w: "By acting as the bookie, you keep the opponent's Stake minus exchange commissions.",
+                desc_l_l: "Acting as the bookie, the event happened. You must pay the winner using your Liability (Risk)."
             },
             es: {
-                start: "EMPEZAR A JUGAR", tap: "Toca, Clic o Espacio para tirar", next: "SIGUIENTE PENALTI",
+                start: "INICIAR ACADEMIA", tap: "Toca para Potencia", tap_aim: "Toca para Dirección", tap_height: "Toca para Altura", next: "SIGUIENTE PENALTI",
+                step1: "1. POTENCIA", step2: "2. DIRECCIÓN", step3: "3. ALTURA",
                 res_goal: "¡GOL!", res_saved: "¡PARADA!", res_miss: "¡FUERA!", sub_goal: "Penalti Anotado", sub_saved: "El portero detiene", sub_miss: "Balón a la grada",
-                scenario: "Escenario de Riesgo", bankroll: "Iniciando 100€ • Riesgo 1€ (1%)",
-                lbl_res: "Cambio en Saldo",
-                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
-                desc_b_w: "Apostando 1€ a favor del GOL ganas el beneficio neto (-5% comisión).",
-                desc_b_l: "Apostando 1€ a favor del GOL pierdes exactamente tu riesgo de 1€.",
-                desc_l_w: "Apostando en contra del GOL (arriesgando 1€) ganas el stake del rival. Neto: +3.06€.",
-                desc_l_l: "Actuando como banca, el evento ocurrió. Pagas tu responsabilidad máxima (1€)."
+                scenario: "Lección de Gestión de Riesgo", bankroll: "Banca: 100€ • Riesgo: 1€ (1%)",
+                lbl_math: "Cálculo Matemático", lbl_net: "Resultado Neto",
+                b_title: "BACK (A FAVOR)", l_title: "LAY (EN CONTRA)",
+                b_win_math: "Stake: 1.00€<br>Bruto: +0.29€<br>Com (5%): -0.01€", b_win_net: "+€0.28",
+                b_loss_math: "Stake: 1.00€<br>Pérdida: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
+                l_win_math: "Stake Rival: 3.23€<br>Bruto: +3.23€<br>Com (5%): -0.16€", l_win_net: "+€3.07",
+                l_loss_math: "Riesgo (Liab): 1.00€<br>Pagado: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
+                desc_b_w: "Al apostar a favor, ganas el beneficio calculado por la cuota y retienes tu stake inicial.",
+                desc_b_l: "Al apostar a favor, si el evento no ocurre pierdes exactamente el stake arriesgado.",
+                desc_l_w: "Al actuar como banca, te quedas con el Stake del oponente menos las comisiones.",
+                desc_l_l: "Actuando como banca, el evento ocurrió. Debes pagar al ganador usando tu Riesgo (Responsabilidad)."
+            },
+            pt: {
+                start: "INICIAR ACADEMIA", tap: "Toque para Força", tap_aim: "Toque para Direção", tap_height: "Toque para Altura", next: "PRÓXIMO PÊNALTI",
+                step1: "1. FORÇA", step2: "2. DIREÇÃO", step3: "3. ALTURA",
+                res_goal: "GOL!", res_saved: "DEFESA!", res_miss: "FORA!", sub_goal: "Pênalti Marcado", sub_saved: "Goleiro defende", sub_miss: "Bola na arquibancada",
+                scenario: "Lição de Gestão de Risco", bankroll: "Banca: 100€ • Risco: 1€ (1%)",
+                lbl_math: "Cálculo Matemático", lbl_net: "Resultado Líquido",
+                b_title: "BACK (A FAVOR)", l_title: "LAY (CONTRA)",
+                b_win_math: "Stake: 1.00€<br>Bruto: +0.29€<br>Com (5%): -0.01€", b_win_net: "+€0.28",
+                b_loss_math: "Stake: 1.00€<br>Perda: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
+                l_win_math: "Stake Rival: 3.23€<br>Bruto: +3.23€<br>Com (5%): -0.16€", l_win_net: "+€3.07",
+                l_loss_math: "Risco (Liab): 1.00€<br>Pago: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
+                desc_b_w: "Ao apostar a favor, você ganha o lucro calculado pela odd e mantém sua stake inicial.",
+                desc_b_l: "Ao apostar a favor, se o evento não ocorrer, você perde exatamente a stake arriscada.",
+                desc_l_w: "Atuando como banca, você fica com a Stake do oponente menos as comissões.",
+                desc_l_l: "Atuando como banca, o evento ocorreu. Você deve pagar ao vencedor usando seu Risco (Responsabilidade)."
             }
         };
 
-        let currentLang = 'it';
+        let currentLang = 'it'; // Default in Italiano
         
         function updateTexts() {
             const t = i18n[currentLang];
@@ -247,8 +341,14 @@
             document.getElementById('btn-next').innerText = t.next;
             document.getElementById('lbl-scenario').innerText = t.scenario;
             document.getElementById('lbl-bankroll').innerText = t.bankroll;
-            document.getElementById('lbl-back-res').innerText = t.lbl_res;
-            document.getElementById('lbl-lay-res').innerText = t.lbl_res;
+            
+            // Labels strutturali
+            document.getElementById('lbl-b-title').innerText = t.b_title;
+            document.getElementById('lbl-l-title').innerText = t.l_title;
+            document.getElementById('lbl-b-math').innerText = t.lbl_math;
+            document.getElementById('lbl-l-math').innerText = t.lbl_math;
+            document.getElementById('lbl-b-net').innerText = t.lbl_net;
+            document.getElementById('lbl-l-net').innerText = t.lbl_net;
         }
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -276,10 +376,17 @@
         }
 
         // --- 3. VARIABILI DI STATO ---
-        let gameState = 'IDLE'; // IDLE, POWER, RESULT
-        let power = 0;
-        let pDir = 1;
+        let gameState = 'IDLE'; // IDLE, POWER, AIM_H, AIM_V, SHOOTING, RESULT
+        let power = 0, aimH = 50, aimV = 50;
+        let pDir = 1, hDir = 1, vDir = 1;
         let animFrame;
+        let hasShot = false; // Flag anti doppio-tap
+
+        // Variabili Animazione 3D
+        let goalRect = { x: 0, y: 0, w: 0, h: 0, horizon: 0 };
+        let ballAnim = { x: 0, y: 0, scale: 1, tx: 0, ty: 0, targetScale: 0.35 };
+        let handsAnim = { x: 0, y: 0, tx: 0, ty: 0 };
+        let currentOutcome = '';
 
         // Polyfill cross-browser per le animazioni
         window.requestAnimFrame = (function(){
@@ -306,193 +413,304 @@
         function resize() {
             w = window.innerWidth;
             h = window.innerHeight;
-            // Supporto High-DPI
             const dpr = window.devicePixelRatio || 1;
             canvas.width = w * dpr;
             canvas.height = h * dpr;
             ctx.scale(dpr, dpr);
+
+            // Calcolo dimensioni porta globale
+            const horizon = h * 0.4;
+            const maxGoalH = h * 0.45; 
+            let goalW = Math.min(w * 0.7, 650); 
+            let goalH = goalW * 0.4;
+
+            if (goalH > maxGoalH) { goalH = maxGoalH; goalW = goalH / 0.4; }
+            
+            goalRect = { 
+                x: (w - goalW) / 2, 
+                y: horizon - goalH + 20, 
+                w: goalW, 
+                h: goalH, 
+                horizon: horizon 
+            };
+
             drawPitch();
         }
 
         function drawPitch() {
-            // Sfondo scuro
             ctx.fillStyle = '#061a0d';
             ctx.fillRect(0, 0, w, h);
-
-            // Orizzonte
-            const horizon = h * 0.4;
 
             // Prato con strisce prospettiche
             for (let i = 0; i < 10; i++) {
                 ctx.fillStyle = i % 2 === 0 ? '#114a22' : '#165c2b';
-                const yStart = horizon + (i * (h - horizon) / 10);
-                const yEnd = horizon + ((i + 1) * (h - horizon) / 10);
+                const yStart = goalRect.horizon + (i * (h - goalRect.horizon) / 10);
+                const yEnd = goalRect.horizon + ((i + 1) * (h - goalRect.horizon) / 10);
                 ctx.fillRect(0, yStart, w, yEnd - yStart);
             }
 
-            // Dimensioni Porta dinamiche (Ottimizzate anche per Desktop)
-            const goalW = Math.min(w * 0.7, 650); // Aumentato il limite per PC
-            const goalH = goalW * 0.4;
-            const goalX = (w - goalW) / 2;
-            const goalY = horizon - goalH + 20;
-
-            // Rete (Semplificata)
+            // Rete
             ctx.strokeStyle = 'rgba(255,255,255,0.15)';
             ctx.lineWidth = 1;
             ctx.beginPath();
             for(let i=0; i<=10; i++) {
-                let px = goalX + (goalW/10)*i;
-                ctx.moveTo(px, goalY); ctx.lineTo(px, goalY + goalH);
+                let px = goalRect.x + (goalRect.w/10)*i;
+                ctx.moveTo(px, goalRect.y); ctx.lineTo(px, goalRect.y + goalRect.h);
             }
             for(let i=0; i<=5; i++) {
-                let py = goalY + (goalH/5)*i;
-                ctx.moveTo(goalX, py); ctx.lineTo(goalX + goalW, py);
+                let py = goalRect.y + (goalRect.h/5)*i;
+                ctx.moveTo(goalRect.x, py); ctx.lineTo(goalRect.x + goalRect.w, py);
             }
             ctx.stroke();
 
-            // Pali della porta
+            // Pali
             ctx.strokeStyle = '#ffffff';
             ctx.lineWidth = 6;
             ctx.lineJoin = 'round';
             ctx.beginPath();
-            ctx.moveTo(goalX, goalY + goalH); // Base sx
-            ctx.lineTo(goalX, goalY); // Palo sx
-            ctx.lineTo(goalX + goalW, goalY); // Traversa
-            ctx.lineTo(goalX + goalW, goalY + goalH); // Palo dx
+            ctx.moveTo(goalRect.x, goalRect.y + goalRect.h);
+            ctx.lineTo(goalRect.x, goalRect.y);
+            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y);
+            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y + goalRect.h);
             ctx.stroke();
 
-            // Palla iniziale
-            if (gameState === 'IDLE' || gameState === 'POWER') {
-                drawBall(w / 2, h * 0.85);
+            // Render condizionale di palla e portiere
+            if (gameState === 'SHOOTING' || gameState === 'RESULT') {
+                drawHands(handsAnim.x, handsAnim.y);
+                drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
+            } else if (gameState !== 'RESULT') {
+                drawBall(w / 2, h * 0.85, 1);
             }
         }
 
-        function drawBall(x, y) {
-            const ballSize = Math.min(w * 0.1, 70); // Adattamento per Desktop
+        function drawHands(x, y) {
+            const handSize = Math.max(30, Math.min(w * 0.15, h * 0.15, 100));
+            ctx.font = `${handSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('👐', x, y);
+        }
+
+        function drawBall(x, y, scale = 1) {
+            // Scalatura dinamica sicura + prospettiva
+            const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 70)) * scale;
             ctx.font = `${ballSize}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             
-            // Ombra
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            // Ombra dinamica
+            ctx.fillStyle = `rgba(0,0,0,${0.5 * scale})`;
             ctx.beginPath();
             ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Palla
             ctx.fillText('⚽', x, y);
         }
 
         // --- 5. LOGICA DI GIOCO ---
         function startGameLoop() {
+            hasShot = false;
             gameState = 'POWER';
-            power = 0;
-            pDir = 1;
+            power = 0; aimH = 50; aimV = 50;
+            pDir = 1; hDir = 1; vDir = 1;
+            
+            // Reset UI Barre
+            document.getElementById('hud-h-wrapper').style.display = 'block';
+            document.getElementById('hud-h-wrapper').classList.add('active');
+            document.getElementById('hud-h-fill').style.opacity = '1';
+            document.getElementById('hud-h-target').style.display = 'none';
+            document.getElementById('hud-h-cursor').style.display = 'none';
+            document.getElementById('hud-h-text').innerText = i18n[currentLang].step1;
+            
+            document.getElementById('hud-v-wrapper').style.display = 'none';
+            document.getElementById('hud-v-wrapper').classList.remove('active');
+            
+            document.getElementById('hud-instruction').innerText = i18n[currentLang].tap;
+
             switchScreen('game');
-            updatePowerBar();
+            updateGameBars();
         }
 
-        function updatePowerBar() {
-            if (gameState !== 'POWER') return;
-            
-            power += 1.5 * pDir; // Velocità barra
-            if (power >= 100) { power = 100; pDir = -1; }
-            if (power <= 0) { power = 0; pDir = 1; }
+        function updateGameBars() {
+            if (gameState === 'POWER') {
+                power += 1.5 * pDir;
+                if (power >= 100) { power = 100; pDir = -1; }
+                if (power <= 0) { power = 0; pDir = 1; }
+                document.getElementById('hud-h-fill').style.width = `${power}%`;
+            } 
+            else if (gameState === 'AIM_H') {
+                aimH += 2 * hDir;
+                if (aimH >= 100) { aimH = 100; hDir = -1; }
+                if (aimH <= 0) { aimH = 0; hDir = 1; }
+                document.getElementById('hud-h-cursor').style.left = `${aimH}%`;
+            }
+            else if (gameState === 'AIM_V') {
+                aimV += 2 * vDir;
+                if (aimV >= 100) { aimV = 100; vDir = -1; }
+                if (aimV <= 0) { aimV = 0; vDir = 1; }
+                document.getElementById('hud-v-cursor').style.top = `${aimV}%`;
+            }
 
-            document.getElementById('power-fill').style.width = `${power}%`;
+            drawPitch(); 
+            if (gameState === 'POWER' || gameState === 'AIM_H' || gameState === 'AIM_V') {
+                animFrame = window.requestAnimFrame(updateGameBars);
+            }
+        }
+
+        function handleShoot(e) {
+            if (hasShot || gameState === 'IDLE' || gameState === 'RESULT' || gameState === 'SHOOTING') return;
+            if (e && e.cancelable && e.type !== 'keydown') e.preventDefault();
             
-            drawPitch(); // Ridisegna per mantenere pulito il canvas
-            animFrame = window.requestAnimFrame(updatePowerBar);
+            if (gameState === 'POWER') {
+                gameState = 'AIM_H';
+                document.getElementById('hud-h-wrapper').classList.remove('active');
+                document.getElementById('hud-h-fill').style.opacity = '0.3';
+                document.getElementById('hud-h-target').style.display = 'block';
+                document.getElementById('hud-h-cursor').style.display = 'block';
+                document.getElementById('hud-h-text').innerText = i18n[currentLang].step2;
+                document.getElementById('hud-instruction').innerText = i18n[currentLang].tap_aim;
+            } 
+            else if (gameState === 'AIM_H') {
+                gameState = 'AIM_V';
+                document.getElementById('hud-v-wrapper').style.display = 'block';
+                setTimeout(() => document.getElementById('hud-v-wrapper').classList.add('active'), 10);
+                document.getElementById('hud-v-text').innerText = i18n[currentLang].step3;
+                document.getElementById('hud-instruction').innerText = i18n[currentLang].tap_height;
+            } 
+            else if (gameState === 'AIM_V') {
+                hasShot = true;
+                shoot();
+            }
         }
 
         function shoot() {
-            if(gameState !== 'POWER') return;
-            gameState = 'RESULT';
+            gameState = 'SHOOTING';
             window.cancelAnimFrame(animFrame);
-            switchScreen('none'); // Nascondi UI momentaneamente
+            switchScreen('none');
 
-            // Determina l'esito. Zona target (verde) è circa 75-90.
-            let outcome;
-            if (power >= 75 && power <= 90) outcome = 'goal'; // Perfetto
-            else if (power > 90) outcome = 'miss'; // Troppo forte
-            else outcome = 'saved'; // Troppo debole
-
-            // Simula animazione tiro (semplice ritardo per UX)
-            drawPitch(); // Pulisce la palla base
+            // Determina esito (Parametri ideali: Potenza 60-95, Dir 35-65, Alt 35-65)
+            const pValid = power >= 60 && power <= 95;
+            const hValid = aimH >= 35 && aimH <= 65;
+            const vValid = aimV >= 35 && aimV <= 65;
             
-            // Animazione "finta" testuale per feedback immediato sul canvas
-            ctx.fillStyle = 'rgba(0,0,0,0.7)';
-            ctx.fillRect(0,0,w,h);
-            ctx.fillStyle = 'white';
-            ctx.font = 'bold 30px Inter';
-            ctx.textAlign = 'center';
-            ctx.fillText("...", w/2, h/2);
+            if (pValid && hValid && vValid) currentOutcome = 'goal';
+            else if (power > 95 || power < 30 || aimH > 85 || aimH < 15 || aimV > 85 || aimV < 15) currentOutcome = 'miss';
+            else currentOutcome = 'saved';
 
-            setTimeout(() => {
-                showResult(outcome);
-            }, 800);
+            // Setup parametri animazione
+            ballAnim.x = w / 2; 
+            ballAnim.y = h * 0.85; 
+            ballAnim.scale = 1;
+            
+            // Mappa Direzione (0-100)
+            ballAnim.tx = goalRect.x - (goalRect.w * 0.15) + ((aimH / 100) * (goalRect.w * 1.3));
+            // Mappa Altezza (0-100)
+            ballAnim.ty = (goalRect.y + goalRect.h) - ((aimV / 100) * (goalRect.h * 1.15));
+
+            // Posizione iniziale portiere (centro porta)
+            handsAnim.x = w / 2; 
+            handsAnim.y = goalRect.y + goalRect.h / 2;
+            
+            if (currentOutcome === 'saved') {
+                handsAnim.tx = ballAnim.tx; 
+                handsAnim.ty = ballAnim.ty;
+            } else {
+                // Tuffo disperato dal lato opposto
+                handsAnim.tx = ballAnim.tx < w / 2 ? goalRect.x + goalRect.w * 0.8 : goalRect.x + goalRect.w * 0.2;
+                handsAnim.ty = goalRect.y + goalRect.h * 0.8;
+            }
+
+            updateShooting();
+        }
+
+        function updateShooting() {
+            if (gameState !== 'SHOOTING') return;
+
+            // Interpolazione fisica e prospettiva
+            ballAnim.x += (ballAnim.tx - ballAnim.x) * 0.08;
+            ballAnim.y += (ballAnim.ty - ballAnim.y) * 0.08;
+            ballAnim.scale += (ballAnim.targetScale - ballAnim.scale) * 0.08;
+
+            handsAnim.x += (handsAnim.tx - handsAnim.x) * 0.06;
+            handsAnim.y += (handsAnim.ty - handsAnim.y) * 0.06;
+
+            drawPitch();
+
+            // Controlla fine animazione (palla arrivata a destinazione)
+            if (Math.abs(ballAnim.scale - ballAnim.targetScale) < 0.015) {
+                gameState = 'RESULT';
+                setTimeout(() => showResult(currentOutcome), 250);
+                return;
+            }
+
+            animFrame = window.requestAnimFrame(updateShooting);
         }
 
         function showResult(outcome) {
             const t = i18n[currentLang];
             const titleEl = document.getElementById('res-title');
             const subEl = document.getElementById('res-subtitle');
-            const valBack = document.getElementById('val-back-res');
+            
+            // Elementi Back
+            const valBackMath = document.getElementById('val-back-math');
+            const valBackRes = document.getElementById('val-back-res');
             const descBack = document.getElementById('desc-back');
-            const valLay = document.getElementById('val-lay-res');
+            
+            // Elementi Lay
+            const valLayMath = document.getElementById('val-lay-math');
+            const valLayRes = document.getElementById('val-lay-res');
             const descLay = document.getElementById('desc-lay');
 
-            const isGoal = outcome === 'goal';
-
-            if (isGoal) {
+            if (outcome === 'goal') {
+                // UI Header
                 titleEl.innerText = t.res_goal; 
-                titleEl.className = "text-[#00ff44] font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)]";
+                titleEl.className = "text-[#00ff44] font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)] leading-tight";
                 subEl.innerText = t.sub_goal;
                 
-                // Matematica se GOL
-                valBack.innerText = t.b_win; valBack.className = "font-black text-xl md:text-2xl font-mono leading-none text-green-600";
+                // BACK vince
+                valBackMath.innerHTML = t.b_win_math;
+                valBackRes.innerText = t.b_win_net; 
+                valBackRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-green-600";
                 descBack.innerText = t.desc_b_w;
                 
-                valLay.innerText = t.l_loss; valLay.className = "font-black text-xl md:text-2xl font-mono leading-none text-red-600";
+                // LAY perde
+                valLayMath.innerHTML = t.l_loss_math;
+                valLayRes.innerText = t.l_loss_net; 
+                valLayRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-red-600";
                 descLay.innerText = t.desc_l_l;
             } else {
+                // UI Header
                 titleEl.innerText = outcome === 'saved' ? t.res_saved : t.res_miss;
-                titleEl.className = "text-white font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-lg";
+                titleEl.className = "text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight";
                 subEl.innerText = outcome === 'saved' ? t.sub_saved : t.sub_miss;
 
-                // Matematica se NON GOL
-                valBack.innerText = t.b_loss; valBack.className = "font-black text-xl md:text-2xl font-mono leading-none text-red-600";
+                // BACK perde
+                valBackMath.innerHTML = t.b_loss_math;
+                valBackRes.innerText = t.b_loss_net; 
+                valBackRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-red-600";
                 descBack.innerText = t.desc_b_l;
                 
-                valLay.innerText = t.l_win; valLay.className = "font-black text-xl md:text-2xl font-mono leading-none text-green-600";
+                // LAY vince
+                valLayMath.innerHTML = t.l_win_math;
+                valLayRes.innerText = t.l_win_net; 
+                valLayRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-green-600";
                 descLay.innerText = t.desc_l_w;
             }
 
             switchScreen('res');
-            drawPitch(); // Ripristina lo sfondo dietro il modale
+            drawPitch(); 
         }
 
         // --- 6. EVENT LISTENERS ---
-        // UI: Utilizzo di 'click' per la massima compatibilità universale
         document.getElementById('btn-start').addEventListener('click', startGameLoop);
         document.getElementById('btn-next').addEventListener('click', startGameLoop);
 
-        // Gioco: Utilizzo combinato di mousedown, touchstart e keydown (Barra Spaziatrice per PC)
-        function handleShoot(e) {
-            if(e && e.cancelable && e.type !== 'keydown') e.preventDefault();
-            shoot();
-        }
-        
         touchZone.addEventListener('mousedown', handleShoot);
         touchZone.addEventListener('touchstart', handleShoot, { passive: false });
         
-        // Listener globale per la tastiera (PC)
         window.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
-                if (gameState === 'POWER') {
-                    e.preventDefault();
-                    handleShoot(e);
-                }
+                handleShoot(e);
             }
         });
 
