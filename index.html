@@ -3,186 +3,504 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#061a0d">
     <title>Zero To Hero - Betting Academy</title>
+    
+    <!-- Tailwind CSS (via CDN per immediatezza) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --neon-green: #00ff44; --bf-back: #a6d8ff; --bf-lay: #f9c9d4; }
-        body { margin: 0; background: #0a1d12; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; }
-        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .app-screen { position: absolute; inset: 0; z-index: 50; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
-        .screen-active { display: flex !important; }
-        .neon-box { background: rgba(0,0,0,0.9); border: 2px solid var(--neon-green); border-radius: 12px; box-shadow: 0 0 20px rgba(0,255,68,0.2); }
-        .btn-main { padding: 12px 32px; background: var(--neon-green); color: black; border-radius: 50px; font-weight: 900; text-transform: uppercase; transition: transform 0.2s; }
-        .btn-main:active { transform: scale(0.95); }
-        .comparison-card { background: white; border-radius: 12px; padding: 15px; width: 100%; max-width: 350px; margin: 8px 0; }
-        #hud-h-container { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); width: 80%; max-width: 300px; height: 12px; background: rgba(255,255,255,0.2); border-radius: 10px; overflow: hidden; display: none; z-index: 10; }
-        #hud-fill { height: 100%; width: 0%; background: var(--neon-green); }
-        .lang-btn { font-size: 24px; padding: 8px; border: 2px solid transparent; border-radius: 50%; transition: 0.2s; }
-        .lang-active { border-color: var(--neon-green); background: rgba(0,255,68,0.1); }
+        :root {
+            --neon-green: #00ff44;
+            --bf-back: #2b82c9;
+            --bf-back-light: #e0f2fe;
+            --bf-lay: #d81b60;
+            --bf-lay-light: #fce7f3;
+            --bg-dark: #061a0d;
+        }
+
+        /* Setup base per evitare scroll elastico su mobile */
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; background-color: var(--bg-dark);
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Canvas Background */
+        #gameCanvas {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+        }
+
+        /* Overlay UI */
+        .ui-layer {
+            position: absolute; inset: 0; z-index: 10;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            pointer-events: none; /* Lascia passare i click al layer inferiore di default */
+            opacity: 0; transition: opacity 0.3s ease-in-out;
+        }
+        .ui-active { opacity: 1; pointer-events: auto; }
+
+        /* Effetto Vetro (Glassmorphism) */
+        .glass-panel {
+            background: rgba(10, 29, 18, 0.85);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        /* Bottoni Generici */
+        .btn-primary {
+            background: var(--neon-green); color: #000;
+            font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 1.25rem 2.5rem; border-radius: 9999px;
+            box-shadow: 0 0 20px rgba(0, 255, 68, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%; max-width: 320px;
+            font-size: 1.1rem;
+        }
+        .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); cursor: pointer; }
+        .btn-primary:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 255, 68, 0.5); }
+
+        /* Bottoni Lingua */
+        .lang-btn {
+            font-size: 2.5rem; padding: 0.5rem; border-radius: 50%;
+            border: 2px solid transparent; transition: all 0.2s;
+            filter: grayscale(80%); cursor: pointer;
+        }
+        .lang-btn:hover { filter: grayscale(30%); transform: scale(1.05); }
+        .lang-btn.active {
+            filter: grayscale(0%);
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 68, 0.1);
+            transform: scale(1.15);
+        }
+
+        /* Barra della Potenza */
+        .power-bar-container {
+            position: absolute; bottom: 12%; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 600px; height: 1.75rem;
+            background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.8);
+            border-radius: 999px; overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+        }
+        .power-bar-fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444);
+            transition: width 0.05s linear;
+        }
+        .power-target {
+            position: absolute; top: 0; bottom: 0; left: 75%; width: 15%;
+            background: rgba(255,255,255,0.3); border-left: 3px solid white; border-right: 3px solid white;
+        }
+
+        /* Area di tap a tutto schermo per il gioco */
+        #touch-zone {
+            position: absolute; inset: 0; z-index: 5; cursor: crosshair; display: none;
+        }
+
+        /* Animazioni Custom */
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     </style>
 </head>
 <body>
 
-<canvas id="gameCanvas"></canvas>
+    <!-- Sfondo e Animazioni di Gioco -->
+    <canvas id="gameCanvas"></canvas>
 
-<!-- SCREEN 1: LINGUA -->
-<div id="screen-lang" class="app-screen screen-active">
-    <div class="neon-box p-8 flex flex-col items-center">
-        <h1 class="text-white font-black text-2xl mb-6 uppercase tracking-tighter">Select Language</h1>
-        <div class="flex gap-4 mb-8">
-            <button class="lang-btn" onclick="setLang('it')">🇮🇹</button>
-            <button class="lang-btn" onclick="setLang('en')">🇬🇧</button>
-            <button class="lang-btn" onclick="setLang('es')">🇪🇸</button>
-        </div>
-        <button id="btn-go-lang" class="btn-main">Continua</button>
-    </div>
-</div>
+    <!-- Zona di tocco invisibile per fermare la barra -->
+    <div id="touch-zone"></div>
 
-<!-- SCREEN 2: RISULTATO & COMPARAZIONE -->
-<div id="screen-result" class="app-screen">
-    <div class="w-full max-w-md p-4 flex flex-col items-center">
-        <h2 id="res-title" class="text-white font-black text-4xl mb-4 italic uppercase">GOAL!</h2>
-        
-        <!-- Simulazione Back -->
-        <div class="comparison-card border-l-8 border-blue-400">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-black text-blue-600 uppercase text-xs">BACK (Punta) @1.29</span>
-                <span id="sim-back-res" class="font-mono font-bold">+€0.28</span>
+    <!-- SCHERMATA 1: SELEZIONE LINGUA -->
+    <div id="screen-lang" class="ui-layer ui-active px-4">
+        <div class="glass-panel p-8 w-[95%] sm:w-full max-w-md md:max-w-lg flex flex-col items-center animate-slide-up">
+            <h1 class="text-white font-black text-4xl mb-2 text-center uppercase tracking-tight drop-shadow-md">Zero To Hero</h1>
+            <p class="text-gray-400 text-sm md:text-base mb-10 text-center uppercase tracking-[0.3em]">Academy</p>
+            
+            <div class="flex gap-8 mb-12">
+                <button class="lang-btn active" data-lang="it">🇮🇹</button>
+                <button class="lang-btn" data-lang="en">🇬🇧</button>
+                <button class="lang-btn" data-lang="es">🇪🇸</button>
             </div>
-            <p id="sim-back-desc" class="text-[10px] text-gray-600 leading-tight">Se avessi puntato 1€ sul GOL, avresti incassato la quota netta (meno 5% comm).</p>
+            
+            <button id="btn-start" class="btn-primary">INIZIA A GIOCARE</button>
         </div>
-
-        <!-- Simulazione Lay -->
-        <div class="comparison-card border-l-8 border-pink-400">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-black text-pink-600 uppercase text-xs">LAY (Banca) @1.31</span>
-                <span id="sim-lay-res" class="font-mono font-bold">-€0.31</span>
-            </div>
-            <p id="sim-lay-desc" class="text-[10px] text-gray-600 leading-tight">Se avessi bancato il GOL, avresti dovuto pagare la responsabilità al puntatore.</p>
-        </div>
-
-        <button id="btn-next" class="btn-main mt-6 w-full">Prossimo Rigore</button>
     </div>
-</div>
 
-<!-- HUD DI GIOCO -->
-<div id="hud-h-container"><div id="hud-fill"></div></div>
-<div id="tap-zone" class="absolute inset-0 z-20 hidden"></div>
+    <!-- SCHERMATA 2: HUD DI GIOCO (Barra Potenza) -->
+    <div id="screen-game" class="ui-layer">
+        <div class="absolute top-10 text-center w-full">
+            <p id="hud-instruction" class="text-white font-bold text-sm md:text-base tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-6 py-3 rounded-full backdrop-blur-md shadow-lg">
+                Tocca, Clicca o Spazio per tirare
+            </p>
+        </div>
+        <div class="power-bar-container">
+            <div class="power-target"></div>
+            <div id="power-fill" class="power-bar-fill"></div>
+        </div>
+    </div>
 
-<script>
-    const i18n = {
-        it: { go: "Inizia", goal: "GOL!", saved: "PARATA!", out: "FUORI!", next: "Prossimo Rigore", back_win: "Vincita Netta: +€", back_loss: "Perdita Stake: -€1.00", lay_win: "Vincita Stake: +€0.95", lay_loss: "Responsabilità: -€", desc_b_w: "Avresti vinto la scommessa a favore del gol.", desc_b_l: "Avresti perso l'euro puntato a favore del gol.", desc_l_w: "Hai 'fatto il banco' con successo: tieni lo stake del puntatore.", desc_l_l: "Come banca, devi pagare la vincita al puntatore." },
-        en: { go: "Start", goal: "GOAL!", saved: "SAVED!", out: "MISSED!", next: "Next Penalty", back_win: "Net Win: +€", back_loss: "Loss: -€1.00", lay_win: "Stake Won: +€0.95", lay_loss: "Liability: -€", desc_b_w: "You would have won the bet in favor of the goal.", desc_b_l: "You would have lost the Euro bet in favor of the goal.", desc_l_w: "Successfully acted as bookie: you keep the backer's stake.", desc_l_l: "As the bookie, you must pay the winner's profit." },
-        es: { go: "Empezar", goal: "¡GOL!", saved: "¡PARADA!", out: "¡FUERA!", next: "Siguiente Penalti", back_win: "Ganancia: +€", back_loss: "Pérdida: -€1.00", lay_win: "Stake ganado: +€0.95", lay_loss: "Riesgo: -€", desc_b_w: "Habrías ganado la apuesta a favor del gol.", desc_b_l: "Habrías perdido el euro apostado a favor del gol.", desc_l_w: "Operación de banca exitosa: te quedas con el stake.", desc_l_l: "Como banca, debes pagar la ganancia al apostador." }
-    };
+    <!-- SCHERMATA 3: RISULTATO E MATEMATICA -->
+    <div id="screen-result" class="ui-layer px-4 py-8">
+        <div class="glass-panel p-6 md:p-8 w-[95%] sm:w-full max-w-md md:max-w-xl flex flex-col items-center animate-slide-up max-h-[90vh] overflow-y-auto">
+            
+            <!-- Esito -->
+            <h2 id="res-title" class="text-white font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-lg">GOL!</h2>
+            <p id="res-subtitle" class="text-gray-300 text-xs md:text-sm uppercase tracking-[0.2em] mb-6">Rigore calciato</p>
 
-    let curLang = 'it';
-    let gameState = 'IDLE';
-    let power = 0;
-    let pDir = 1;
+            <div class="w-full bg-black/50 rounded-xl p-4 mb-6 text-center border border-white/10 shadow-inner">
+                <p class="text-[10px] md:text-xs text-gray-400 uppercase tracking-widest mb-1" id="lbl-scenario">Scenario di Rischio</p>
+                <p class="text-white font-bold text-sm md:text-base" id="lbl-bankroll">Partendo da 100€ • Puntando 1€ (1%)</p>
+            </div>
 
-    function setLang(l) {
-        curLang = l;
-        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('lang-active'));
-        event.target.classList.add('lang-active');
-        document.getElementById('btn-go-lang').innerText = i18n[l].go;
-    }
+            <div class="w-full flex flex-col md:flex-row gap-4 mb-8">
+                <!-- Card BACK (Punta) -->
+                <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-back-light)] shadow-lg transform transition-transform hover:scale-[1.02]">
+                    <div class="bg-[var(--bf-back-light)] px-4 py-3 flex justify-between items-center border-b border-[var(--bf-back)]/20">
+                        <span class="font-black text-[var(--bf-back)] uppercase text-xs md:text-sm">BACK (Punta)</span>
+                        <span class="font-bold text-[var(--bf-back)] text-xs md:text-sm font-mono bg-white/50 px-2 py-1 rounded">Quota 1.29</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-back-res">Esito</span>
+                            <span id="val-back-res" class="font-black text-xl md:text-2xl font-mono leading-none">+€0.28</span>
+                        </div>
+                        <p id="desc-back" class="text-xs text-gray-600 leading-snug">Hai scommesso a favore del gol. Vinci la quota netta (-5% comm).</p>
+                    </div>
+                </div>
 
-    // --- GAME LOGIC ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    let w, h;
-    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-    window.onresize = resize; resize();
+                <!-- Card LAY (Banca) -->
+                <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-lay-light)] shadow-lg transform transition-transform hover:scale-[1.02]">
+                    <div class="bg-[var(--bf-lay-light)] px-4 py-3 flex justify-between items-center border-b border-[var(--bf-lay)]/20">
+                        <span class="font-black text-[var(--bf-lay)] uppercase text-xs md:text-sm">LAY (Banca)</span>
+                        <span class="font-bold text-[var(--bf-lay)] text-xs md:text-sm font-mono bg-white/50 px-2 py-1 rounded">Quota 1.31</span>
+                    </div>
+                    <div class="p-4 flex-1 flex flex-col justify-between">
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-lay-res">Esito</span>
+                            <span id="val-lay-res" class="font-black text-xl md:text-2xl font-mono leading-none">-€1.00</span>
+                        </div>
+                        <p id="desc-lay" class="text-xs text-gray-600 leading-snug">Hai scommesso contro il gol. Devi pagare la responsabilità stabilita.</p>
+                    </div>
+                </div>
+            </div>
 
-    function drawScene() {
-        ctx.fillStyle = '#0a1d12'; ctx.fillRect(0,0,w,h);
-        // Porta semplificata
-        ctx.strokeStyle = 'white'; ctx.lineWidth = 5;
-        ctx.strokeRect(w*0.2, h*0.2, w*0.6, h*0.3);
-        // Campo
-        ctx.fillStyle = '#1a5928'; ctx.fillRect(0, h*0.5, w, h*0.5);
-        // Palla
-        ctx.font = '50px Arial'; ctx.textAlign = 'center';
-        ctx.fillText('⚽', w/2, h*0.85);
-    }
+            <button id="btn-next" class="btn-primary">PROSSIMO RIGORE</button>
+        </div>
+    </div>
 
-    function startPower() {
-        document.getElementById('screen-lang').classList.remove('screen-active');
-        document.getElementById('hud-h-container').style.display = 'block';
-        document.getElementById('tap-zone').classList.remove('hidden');
-        gameState = 'POWER';
-        animate();
-    }
+    <!-- SCRIPT LOGICA E RENDER -->
+    <script>
+        // --- 1. DIZIONARIO MULTILINGUA ---
+        const i18n = {
+            it: {
+                start: "INIZIA A GIOCARE", tap: "Tocca, Clicca o Spazio per tirare", next: "PROSSIMO RIGORE",
+                res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna",
+                scenario: "Scenario di Rischio", bankroll: "Partendo da 100€ • Rischio 1€ (1%)",
+                lbl_res: "Variazione Cassa",
+                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
+                desc_b_w: "Puntando 1€ sul GOL vinceresti la vincita netta (dedotta la commissione del 5%).",
+                desc_b_l: "Puntando 1€ sul GOL avresti perso esattamente il tuo rischio di 1€.",
+                desc_l_w: "Bancando il GOL (rischiando 1€) vinci lo stake del puntatore. Netto: +3.06€.",
+                desc_l_l: "Facendo il banco sul GOL, l'evento si è verificato. Paghi la tua responsabilità massima (1€)."
+            },
+            en: {
+                start: "START PLAYING", tap: "Tap, Click or Space to shoot", next: "NEXT PENALTY",
+                res_goal: "GOAL!", res_saved: "SAVED!", res_miss: "MISSED!", sub_goal: "Penalty Scored", sub_saved: "Keeper blocks it", sub_miss: "Over the bar",
+                scenario: "Risk Scenario", bankroll: "Starting €100 • Risk €1 (1%)",
+                lbl_res: "Bankroll Change",
+                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
+                desc_b_w: "Backing GOAL with €1 wins you the net profit (-5% commission).",
+                desc_b_l: "Backing GOAL with €1 means you lose your exact stake of €1.",
+                desc_l_w: "Laying GOAL (risking €1) wins you the backer's stake. Net: +€3.06.",
+                desc_l_l: "Acting as the bookie, the event happened. You pay your max liability (€1)."
+            },
+            es: {
+                start: "EMPEZAR A JUGAR", tap: "Toca, Clic o Espacio para tirar", next: "SIGUIENTE PENALTI",
+                res_goal: "¡GOL!", res_saved: "¡PARADA!", res_miss: "¡FUERA!", sub_goal: "Penalti Anotado", sub_saved: "El portero detiene", sub_miss: "Balón a la grada",
+                scenario: "Escenario de Riesgo", bankroll: "Iniciando 100€ • Riesgo 1€ (1%)",
+                lbl_res: "Cambio en Saldo",
+                b_win: "+€0.28", b_loss: "-€1.00", l_win: "+€3.06", l_loss: "-€1.00",
+                desc_b_w: "Apostando 1€ a favor del GOL ganas el beneficio neto (-5% comisión).",
+                desc_b_l: "Apostando 1€ a favor del GOL pierdes exactamente tu riesgo de 1€.",
+                desc_l_w: "Apostando en contra del GOL (arriesgando 1€) ganas el stake del rival. Neto: +3.06€.",
+                desc_l_l: "Actuando como banca, el evento ocurrió. Pagas tu responsabilidad máxima (1€)."
+            }
+        };
 
-    function animate() {
-        if(gameState === 'POWER') {
-            power += 2 * pDir;
-            if(power >= 100 || power <= 0) pDir *= -1;
-            document.getElementById('hud-fill').style.width = power + '%';
-            drawScene();
-            requestAnimationFrame(animate);
-        }
-    }
-
-    function shoot() {
-        gameState = 'RESULT';
-        document.getElementById('hud-h-container').style.display = 'none';
-        document.getElementById('tap-zone').classList.add('hidden');
+        let currentLang = 'it';
         
-        // Esito casuale basato sulla potenza (più vicino a 80% = Gol)
-        let outcome;
-        if(power > 70 && power < 90) outcome = 'goal';
-        else if(power >= 90) outcome = 'out';
-        else outcome = 'saved';
-
-        showRecap(outcome);
-    }
-
-    function showRecap(res) {
-        const t = i18n[curLang];
-        document.getElementById('res-title').innerText = t[res];
-        
-        const isGoal = res === 'goal';
-        
-        // Logica 1€ Back @1.29
-        if(isGoal) {
-            document.getElementById('sim-back-res').innerText = t.back_win + "0.28";
-            document.getElementById('sim-back-desc').innerText = t.desc_b_w;
-            document.getElementById('sim-back-res').className = "font-mono font-bold text-green-600";
-        } else {
-            document.getElementById('sim-back-res').innerText = t.back_loss;
-            document.getElementById('sim-back-desc').innerText = t.desc_b_l;
-            document.getElementById('sim-back-res').className = "font-mono font-bold text-red-600";
+        function updateTexts() {
+            const t = i18n[currentLang];
+            document.getElementById('btn-start').innerText = t.start;
+            document.getElementById('hud-instruction').innerText = t.tap;
+            document.getElementById('btn-next').innerText = t.next;
+            document.getElementById('lbl-scenario').innerText = t.scenario;
+            document.getElementById('lbl-bankroll').innerText = t.bankroll;
+            document.getElementById('lbl-back-res').innerText = t.lbl_res;
+            document.getElementById('lbl-lay-res').innerText = t.lbl_res;
         }
 
-        // Logica 1€ Lay @1.31 (Responsabilità 0.31€)
-        if(!isGoal) {
-            document.getElementById('sim-lay-res').innerText = t.lay_win;
-            document.getElementById('sim-lay-desc').innerText = t.desc_l_w;
-            document.getElementById('sim-lay-res').className = "font-mono font-bold text-green-600";
-        } else {
-            document.getElementById('sim-lay-res').innerText = t.lay_loss + "0.31";
-            document.getElementById('sim-lay-desc').innerText = t.desc_l_l;
-            document.getElementById('sim-lay-res').className = "font-mono font-bold text-red-600";
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentLang = e.currentTarget.getAttribute('data-lang');
+                updateTexts();
+            });
+        });
+
+        // --- 2. GESTIONE STATI UI ---
+        const screens = {
+            lang: document.getElementById('screen-lang'),
+            game: document.getElementById('screen-game'),
+            res: document.getElementById('screen-result')
+        };
+        const touchZone = document.getElementById('touch-zone');
+
+        function switchScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.remove('ui-active'));
+            if(screenName !== 'none') screens[screenName].classList.add('ui-active');
+            
+            touchZone.style.display = screenName === 'game' ? 'block' : 'none';
         }
 
-        document.getElementById('btn-next').innerText = t.next;
-        document.getElementById('screen-result').classList.add('screen-active');
-    }
+        // --- 3. VARIABILI DI STATO ---
+        let gameState = 'IDLE'; // IDLE, POWER, RESULT
+        let power = 0;
+        let pDir = 1;
+        let animFrame;
 
-    document.getElementById('btn-go-lang').onclick = startPower;
-    document.getElementById('tap-zone').onpointerdown = shoot;
-    document.getElementById('btn-next').onclick = () => {
-        // Qui si torna alla modalità normale del gioco (già gestita nel tuo codice originale)
-        // Per semplicità qui riavviamo il loop didattico
-        document.getElementById('screen-result').classList.remove('screen-active');
-        power = 0;
-        startPower();
-    };
+        // Polyfill cross-browser per le animazioni
+        window.requestAnimFrame = (function(){
+            return  window.requestAnimationFrame       ||
+                    window.webkitRequestAnimationFrame ||
+                    window.mozRequestAnimationFrame    ||
+                    function( callback ){
+                        window.setTimeout(callback, 1000 / 60);
+                    };
+        })();
+        
+        window.cancelAnimFrame = (function(){
+            return  window.cancelAnimationFrame       ||
+                    window.webkitCancelAnimationFrame ||
+                    window.mozCancelAnimationFrame    ||
+                    window.clearTimeout;
+        })();
 
-    drawScene();
-</script>
+        // --- 4. MOTORE GRAFICO CANVAS ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let w, h;
+
+        function resize() {
+            w = window.innerWidth;
+            h = window.innerHeight;
+            // Supporto High-DPI
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = w * dpr;
+            canvas.height = h * dpr;
+            ctx.scale(dpr, dpr);
+            drawPitch();
+        }
+
+        function drawPitch() {
+            // Sfondo scuro
+            ctx.fillStyle = '#061a0d';
+            ctx.fillRect(0, 0, w, h);
+
+            // Orizzonte
+            const horizon = h * 0.4;
+
+            // Prato con strisce prospettiche
+            for (let i = 0; i < 10; i++) {
+                ctx.fillStyle = i % 2 === 0 ? '#114a22' : '#165c2b';
+                const yStart = horizon + (i * (h - horizon) / 10);
+                const yEnd = horizon + ((i + 1) * (h - horizon) / 10);
+                ctx.fillRect(0, yStart, w, yEnd - yStart);
+            }
+
+            // Dimensioni Porta dinamiche (Ottimizzate anche per Desktop)
+            const goalW = Math.min(w * 0.7, 650); // Aumentato il limite per PC
+            const goalH = goalW * 0.4;
+            const goalX = (w - goalW) / 2;
+            const goalY = horizon - goalH + 20;
+
+            // Rete (Semplificata)
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let i=0; i<=10; i++) {
+                let px = goalX + (goalW/10)*i;
+                ctx.moveTo(px, goalY); ctx.lineTo(px, goalY + goalH);
+            }
+            for(let i=0; i<=5; i++) {
+                let py = goalY + (goalH/5)*i;
+                ctx.moveTo(goalX, py); ctx.lineTo(goalX + goalW, py);
+            }
+            ctx.stroke();
+
+            // Pali della porta
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 6;
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(goalX, goalY + goalH); // Base sx
+            ctx.lineTo(goalX, goalY); // Palo sx
+            ctx.lineTo(goalX + goalW, goalY); // Traversa
+            ctx.lineTo(goalX + goalW, goalY + goalH); // Palo dx
+            ctx.stroke();
+
+            // Palla iniziale
+            if (gameState === 'IDLE' || gameState === 'POWER') {
+                drawBall(w / 2, h * 0.85);
+            }
+        }
+
+        function drawBall(x, y) {
+            const ballSize = Math.min(w * 0.1, 70); // Adattamento per Desktop
+            ctx.font = `${ballSize}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Ombra
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Palla
+            ctx.fillText('⚽', x, y);
+        }
+
+        // --- 5. LOGICA DI GIOCO ---
+        function startGameLoop() {
+            gameState = 'POWER';
+            power = 0;
+            pDir = 1;
+            switchScreen('game');
+            updatePowerBar();
+        }
+
+        function updatePowerBar() {
+            if (gameState !== 'POWER') return;
+            
+            power += 1.5 * pDir; // Velocità barra
+            if (power >= 100) { power = 100; pDir = -1; }
+            if (power <= 0) { power = 0; pDir = 1; }
+
+            document.getElementById('power-fill').style.width = `${power}%`;
+            
+            drawPitch(); // Ridisegna per mantenere pulito il canvas
+            animFrame = window.requestAnimFrame(updatePowerBar);
+        }
+
+        function shoot() {
+            if(gameState !== 'POWER') return;
+            gameState = 'RESULT';
+            window.cancelAnimFrame(animFrame);
+            switchScreen('none'); // Nascondi UI momentaneamente
+
+            // Determina l'esito. Zona target (verde) è circa 75-90.
+            let outcome;
+            if (power >= 75 && power <= 90) outcome = 'goal'; // Perfetto
+            else if (power > 90) outcome = 'miss'; // Troppo forte
+            else outcome = 'saved'; // Troppo debole
+
+            // Simula animazione tiro (semplice ritardo per UX)
+            drawPitch(); // Pulisce la palla base
+            
+            // Animazione "finta" testuale per feedback immediato sul canvas
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.fillRect(0,0,w,h);
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 30px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText("...", w/2, h/2);
+
+            setTimeout(() => {
+                showResult(outcome);
+            }, 800);
+        }
+
+        function showResult(outcome) {
+            const t = i18n[currentLang];
+            const titleEl = document.getElementById('res-title');
+            const subEl = document.getElementById('res-subtitle');
+            const valBack = document.getElementById('val-back-res');
+            const descBack = document.getElementById('desc-back');
+            const valLay = document.getElementById('val-lay-res');
+            const descLay = document.getElementById('desc-lay');
+
+            const isGoal = outcome === 'goal';
+
+            if (isGoal) {
+                titleEl.innerText = t.res_goal; 
+                titleEl.className = "text-[#00ff44] font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)]";
+                subEl.innerText = t.sub_goal;
+                
+                // Matematica se GOL
+                valBack.innerText = t.b_win; valBack.className = "font-black text-xl md:text-2xl font-mono leading-none text-green-600";
+                descBack.innerText = t.desc_b_w;
+                
+                valLay.innerText = t.l_loss; valLay.className = "font-black text-xl md:text-2xl font-mono leading-none text-red-600";
+                descLay.innerText = t.desc_l_l;
+            } else {
+                titleEl.innerText = outcome === 'saved' ? t.res_saved : t.res_miss;
+                titleEl.className = "text-white font-black text-5xl md:text-6xl mb-2 uppercase tracking-tighter drop-shadow-lg";
+                subEl.innerText = outcome === 'saved' ? t.sub_saved : t.sub_miss;
+
+                // Matematica se NON GOL
+                valBack.innerText = t.b_loss; valBack.className = "font-black text-xl md:text-2xl font-mono leading-none text-red-600";
+                descBack.innerText = t.desc_b_l;
+                
+                valLay.innerText = t.l_win; valLay.className = "font-black text-xl md:text-2xl font-mono leading-none text-green-600";
+                descLay.innerText = t.desc_l_w;
+            }
+
+            switchScreen('res');
+            drawPitch(); // Ripristina lo sfondo dietro il modale
+        }
+
+        // --- 6. EVENT LISTENERS ---
+        // UI: Utilizzo di 'click' per la massima compatibilità universale
+        document.getElementById('btn-start').addEventListener('click', startGameLoop);
+        document.getElementById('btn-next').addEventListener('click', startGameLoop);
+
+        // Gioco: Utilizzo combinato di mousedown, touchstart e keydown (Barra Spaziatrice per PC)
+        function handleShoot(e) {
+            if(e && e.cancelable && e.type !== 'keydown') e.preventDefault();
+            shoot();
+        }
+        
+        touchZone.addEventListener('mousedown', handleShoot);
+        touchZone.addEventListener('touchstart', handleShoot, { passive: false });
+        
+        // Listener globale per la tastiera (PC)
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (gameState === 'POWER') {
+                    e.preventDefault();
+                    handleShoot(e);
+                }
+            }
+        });
+
+        // Inizializzazione
+        updateTexts();
+        window.addEventListener('resize', resize);
+        resize();
+
+    </script>
 </body>
 </html>
