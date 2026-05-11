@@ -6,10 +6,8 @@
     <meta name="theme-color" content="#061a0d">
     <title>Zero To Hero - Betting Academy</title>
     
-    <!-- Tailwind CSS -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
@@ -24,37 +22,32 @@
             --bg-dark: #061a0d;
         }
 
-        /* Setup base anti-scroll e anti-zoom su mobile */
         html, body {
             margin: 0; padding: 0; width: 100%; height: 100%;
             overflow: hidden; background-color: var(--bg-dark);
             font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
             user-select: none; -webkit-user-select: none;
-            touch-action: none; /* Previene gesture di sistema interferenti */
-            overscroll-behavior: none; /* Previene il pull-to-refresh su mobile */
+            touch-action: none; 
+            overscroll-behavior: none; 
         }
 
         .font-mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Canvas Background */
         #gameCanvas {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
-            /* Forza l'accelerazione hardware */
             transform: translateZ(0); 
         }
 
-        /* Overlay UI - Centratura perfetta e gestione area sicura (notch) */
         .ui-layer {
             position: absolute; inset: 0; z-index: 10;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none;
             opacity: 0; transition: opacity 0.3s ease-in-out;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            padding: env(safe-area-inset-top) 1rem env(safe-area-inset-bottom) 1rem;
         }
         .ui-active { opacity: 1; pointer-events: auto; }
 
-        /* Effetto Vetro (Glassmorphism) - Altezza massima per non fuoriuscire dallo schermo */
         .glass-panel {
             background: rgba(10, 29, 18, 0.85);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
@@ -63,89 +56,60 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1);
             max-height: 95vh;
             display: flex; flex-direction: column;
+            width: 100%; max-width: 500px;
         }
 
-        /* Bottoni Generici */
         .btn-primary {
             background: var(--neon-green); color: #000;
             font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
-            padding: clamp(0.75rem, 3vh, 1.25rem) 2.5rem; border-radius: 9999px;
+            padding: clamp(0.75rem, 3vh, 1rem) 2.5rem; border-radius: 9999px;
             box-shadow: 0 0 20px rgba(0, 255, 68, 0.3);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 100%; max-width: 320px;
+            width: 100%;
             font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            flex-shrink: 0; /* Previene lo schiacciamento se lo spazio manca */
+            flex-shrink: 0;
+            border: none; cursor: pointer;
         }
-        .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); cursor: pointer; }
+        .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); }
         .btn-primary:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 255, 68, 0.5); }
+        .btn-primary:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; transform: none; }
 
-        /* Joystick Pulsante Aura Oro Neon */
-        .gold-neon-pulse {
-            border: 2px solid #FFD700;
-            box-shadow: 
-                0 0 15px #FFD700,
-                0 0 25px #FFD700,
-                inset 0 0 15px rgba(255,215,0,0.4);
-            color: #FFD700;
-            animation: pulseGold 2s infinite ease-in-out;
-            transition: all 0.2s;
-        }
-        .gold-neon-pulse:hover {
-            transform: scale(1.08);
-            box-shadow: 
-                0 0 25px #FFD700,
-                0 0 45px #FFD700,
-                inset 0 0 25px rgba(255,215,0,0.6);
-            animation: none;
-        }
-        .gold-neon-pulse:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 10px #FFD700, inset 0 0 10px rgba(255,215,0,0.3);
-        }
-        
-        @keyframes pulseGold {
-            0% { transform: scale(1); box-shadow: 0 0 15px #FFD700, 0 0 20px rgba(255,215,0,0.5), inset 0 0 15px rgba(255,215,0,0.4); }
-            50% { transform: scale(1.05); box-shadow: 0 0 25px #FFD700, 0 0 45px #FFD700, 0 0 60px rgba(255,140,0,0.7), inset 0 0 25px rgba(255,215,0,0.7); }
-            100% { transform: scale(1); box-shadow: 0 0 15px #FFD700, 0 0 20px rgba(255,215,0,0.5), inset 0 0 15px rgba(255,215,0,0.4); }
-        }
-
-        /* Bottoni Lingua */
         .lang-btn {
             padding: 0; border-radius: 6px; border: 3px solid transparent; transition: all 0.2s;
-            opacity: 0.5; filter: grayscale(80%); cursor: pointer; overflow: hidden;
+            cursor: pointer; overflow: hidden;
             width: clamp(60px, 12vw, 80px); height: clamp(40px, 8vw, 53px); display: block;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            background: #fff;
         }
         .lang-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .lang-btn:hover { opacity: 0.8; filter: grayscale(30%); transform: scale(1.05); }
-        .lang-btn.active {
-            opacity: 1; filter: grayscale(0%);
-            border-color: var(--neon-green);
-            transform: scale(1.15);
-            box-shadow: 0 0 20px rgba(0,255,68,0.5);
-        }
+        .lang-btn:hover { transform: scale(1.05); }
+        .lang-btn.active { border-color: var(--neon-green); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,68,0.5); }
 
-        /* Barre di Gioco (Potenziometri) */
+        /* Custom Slider */
+        input[type=range] {
+            -webkit-appearance: none; width: 100%; background: transparent; padding: 10px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
+            background: #ffffff; cursor: pointer; margin-top: -10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5); border: 3px solid var(--neon-green);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 3px;
+        }
+        input[type=range]:focus { outline: none; }
+
+        .bet-btn { border: 2px solid transparent; transition: all 0.2s; }
+        .bet-btn.back-active { border-color: var(--bf-back); background-color: var(--bf-back-light); box-shadow: 0 0 15px rgba(43, 130, 201, 0.4); }
+        .bet-btn.lay-active { border-color: var(--bf-lay); background-color: var(--bf-lay-light); box-shadow: 0 0 15px rgba(216, 27, 96, 0.4); }
+
         .hud-bar-wrapper {
-            position: absolute;
-            background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.5);
-            border-radius: 999px; overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            display: none;
+            position: absolute; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 999px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none;
         }
-        .hud-bar-wrapper.active {
-            border-color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(0,255,68,0.4);
-        }
-        .hud-h {
-            bottom: 25vh; left: 50%; transform: translateX(-50%);
-            width: 75%; max-width: 500px; height: clamp(1.25rem, 4vh, 1.75rem);
-        }
-        .hud-v {
-            right: 5vw; top: 40%; transform: translateY(-50%);
-            height: 45vh; max-height: 400px; width: clamp(1.25rem, 4vw, 1.75rem);
-        }
+        .hud-bar-wrapper.active { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,68,0.4); }
+        .hud-h { bottom: 25vh; left: 50%; transform: translateX(-50%); width: 75%; max-width: 500px; height: clamp(1.25rem, 4vh, 1.75rem); }
+        .hud-v { right: 5vw; top: 40%; transform: translateY(-50%); height: 45vh; max-height: 400px; width: clamp(1.25rem, 4vw, 1.75rem); }
         .hud-fill-h { height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444); transition: opacity 0.3s; }
         
         .hud-target-h { position: absolute; top: 0; bottom: 0; left: 35%; width: 30%; background: rgba(0,255,68,0.3); border-left: 2px solid white; border-right: 2px solid white; box-shadow: 0 0 15px rgba(0,255,68,0.5); display: none; }
@@ -154,27 +118,16 @@
         .hud-target-v { position: absolute; left: 0; right: 0; top: 35%; height: 30%; background: rgba(0,255,68,0.3); border-top: 2px solid white; border-bottom: 2px solid white; box-shadow: 0 0 15px rgba(0,255,68,0.5); }
         .hud-cursor-v { position: absolute; left: -2px; right: -2px; height: 6px; background: white; top: 50%; transform: translateY(-50%); box-shadow: 0 0 10px white; border-radius: 4px; z-index: 3; }
 
-        .hud-text {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: 900; font-size: clamp(0.65rem, 2.5vw, 0.9rem);
-            text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em;
-        }
+        .hud-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: clamp(0.65rem, 2.5vw, 0.9rem); text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em; }
         .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
 
-        /* Area di tap a tutto schermo per il gioco (Z-INDEX ALTO PER GARANTIRE IL TOCCO) */
-        #touch-zone {
-            position: absolute; inset: 0; z-index: 50; cursor: crosshair; display: none;
-        }
+        #touch-zone { position: absolute; inset: 0; z-index: 50; cursor: crosshair; display: none; }
 
-        /* Animazioni Custom */
         @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        /* Animazione pulsante per istruzioni di gioco */
         @keyframes pulseSlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(0.97); box-shadow: 0 0 8px rgba(255,255,255,0.2); } }
         .animate-pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
 
-        /* Scrollbar stilizzata per i pannelli interni */
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -182,38 +135,84 @@
 </head>
 <body>
 
-    <!-- Sfondo e Animazioni di Gioco -->
     <canvas id="gameCanvas"></canvas>
-
-    <!-- Zona di tocco invisibile per fermare la barra (ora con z-index dominante) -->
     <div id="touch-zone"></div>
 
-    <!-- SCHERMATA 1: SELEZIONE LINGUA E AVVIO -->
+    <!-- SCHERMATA 1: SELEZIONE LINGUA -->
     <div id="screen-lang" class="ui-layer ui-active p-4">
-        <div class="glass-panel p-8 w-full max-w-md md:max-w-lg flex flex-col items-center justify-center animate-slide-up" style="min-height: 350px;">
-            
+        <div class="glass-panel p-8 flex flex-col items-center justify-center animate-slide-up" style="min-height: 350px;">
             <div class="flex gap-4 md:gap-6 mb-12">
-                <!-- Sostituite le PNG con le versioni SVG ad altissima definizione -->
-                <button class="lang-btn active" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano"></button>
-                <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English"></button>
-                <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/es.svg" alt="Español"></button>
-                <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/br.svg" alt="Português"></button>
+                <button class="lang-btn active" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
+                <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
+                <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/es.svg" alt="Español" loading="lazy"></button>
+                <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/br.svg" alt="Português" loading="lazy"></button>
             </div>
-            
-            <!-- Joystick Pulsante Oro Neon -->
-            <div class="mt-auto flex flex-col items-center gap-6">
-                <button id="btn-start" class="flex items-center justify-center w-[clamp(80px,15vw,110px)] h-[clamp(80px,15vw,110px)] rounded-full gold-neon-pulse cursor-pointer bg-black/50 backdrop-blur-sm" title="INIZIA ACCADEMIA">
-                    <!-- Icona Joystick SVG in HD -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 md:w-16 md:h-16" fill="currentColor" viewBox="0 0 256 256">
-                        <path d="M244,92.54A48,48,0,0,0,200.73,56H55.27A48,48,0,0,0,12,92.54c-7.39,23.36-11.85,55,16,77.58A40,40,0,0,0,53.47,176a40.38,40.38,0,0,0,29.35-12.8L95,149.27a8,8,0,0,1,5.92-2.7h54.16a8,8,0,0,1,5.92,2.7l12.18,13.93A40.38,40.38,0,0,0,202.53,176a40,40,0,0,0,25.43-5.88c27.89-22.61,23.43-54.22,16-77.58ZM140,96a12,12,0,1,1,12,12A12,12,0,0,1,140,96Zm32-20a12,12,0,1,1,12,12A12,12,0,0,1,172,76Zm0,40a12,12,0,1,1,12,12A12,12,0,0,1,172,116ZM92,100H80v12a8,8,0,0,1-16,0V100H52a8,8,0,0,1,0-16H64V72a8,8,0,0,1,16,0V84H92a8,8,0,0,1,0,16Z"></path>
-                    </svg>
-                </button>
-                <span id="lbl-start-text" class="text-[#FFD700] font-black text-[clamp(0.85rem,2.5vw,1.2rem)] uppercase tracking-widest drop-shadow-[0_0_10px_rgba(255,215,0,0.8)]">INIZIA ACCADEMIA</span>
+            <div class="mt-auto flex justify-center w-full">
+                <button id="btn-goto-bet" class="btn-primary w-full text-center">Inizia / Start</button>
             </div>
         </div>
     </div>
 
-    <!-- SCHERMATA 2: HUD DI GIOCO (Barre Potenza e Mirino) -->
+    <!-- SCHERMATA 2: BETTING SLIP (Novità) -->
+    <div id="screen-bet" class="ui-layer p-4">
+        <div class="glass-panel p-4 md:p-6 flex flex-col animate-slide-up">
+            
+            <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2">
+                <h2 id="bet-title" class="text-white font-black text-xl md:text-2xl uppercase tracking-tighter">Scommessa</h2>
+                <div class="text-right">
+                    <span id="bet-bankroll-lbl" class="text-gray-400 text-[10px] uppercase block">Bankroll</span>
+                    <span id="bet-bankroll-val" class="text-[var(--neon-green)] font-mono font-black text-lg">100.00€</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mb-4">
+                <button id="btn-back" class="bet-btn back-active flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center">
+                    <span id="lbl-btn-back" class="text-[var(--bf-back)] font-black text-xs md:text-sm uppercase block">PUNTA (SI)</span>
+                    <span class="font-mono text-gray-800 font-bold text-lg">@1.29</span>
+                </button>
+                <button id="btn-lay" class="bet-btn flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center opacity-80 hover:opacity-100">
+                    <span id="lbl-btn-lay" class="text-[var(--bf-lay)] font-black text-xs md:text-sm uppercase block">BANCA (NO)</span>
+                    <span class="font-mono text-gray-800 font-bold text-lg">@1.31</span>
+                </button>
+            </div>
+
+            <div class="bg-black/40 rounded-lg p-4 mb-4 border border-white/10">
+                <div class="flex justify-between text-gray-300 text-xs font-bold mb-2 uppercase">
+                    <span id="lbl-stake">Stake (Puntata)</span>
+                    <span id="val-stake-perc" class="text-white">1%</span>
+                </div>
+                
+                <input type="range" id="stake-slider" min="1" max="100" value="1" class="mb-3 w-full">
+                
+                <div class="flex justify-between gap-2 mt-1">
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="1">1%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="2">2%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="3">3%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="5">5%</button>
+                    <button class="quick-stake flex-1 bg-[var(--bf-lay)]/50 hover:bg-[var(--bf-lay)]/80 text-white font-bold rounded text-xs py-1 transition-colors" data-val="100">MAX</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg p-3 mb-4 shadow-inner">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-gray-500 text-[10px] font-bold uppercase" id="lbl-calc-stake">Stake in Euro</span>
+                    <span id="calc-stake" class="font-mono font-bold text-gray-800">1.00€</span>
+                </div>
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+                    <span class="text-red-500 text-[10px] font-black uppercase" id="lbl-calc-liability">Rischio Reale (Liability)</span>
+                    <span id="calc-liability" class="font-mono font-black text-red-600">-1.00€</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-green-600 text-[10px] font-black uppercase" id="lbl-calc-profit">Vincita Netta (-5% Comm)</span>
+                    <span id="calc-profit" class="font-mono font-black text-green-600 text-lg">+0.28€</span>
+                </div>
+            </div>
+
+            <button id="btn-confirm-bet" class="btn-primary w-full text-center">Gioca Rigore</button>
+        </div>
+    </div>
+
+    <!-- SCHERMATA 3: HUD DI GIOCO -->
     <div id="screen-game" class="ui-layer">
         <div class="absolute top-[12vh] text-center w-full">
             <p id="hud-instruction" class="text-white font-bold text-[clamp(0.7rem,2vw,1rem)] tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-4 py-2 md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 animate-pulse-slow">
@@ -221,7 +220,6 @@
             </p>
         </div>
         
-        <!-- Mirino Orizzontale (Potenza + Direzione) -->
         <div id="hud-h-wrapper" class="hud-bar-wrapper hud-h">
             <div id="hud-h-target" class="hud-target-h"></div>
             <div id="hud-h-fill" class="hud-fill-h"></div>
@@ -229,7 +227,6 @@
             <span id="hud-h-text" class="hud-text">1. POTENZA</span>
         </div>
 
-        <!-- Mirino Verticale (Altezza) -->
         <div id="hud-v-wrapper" class="hud-bar-wrapper hud-v">
             <div id="hud-v-target" class="hud-target-v"></div>
             <div id="hud-v-cursor" class="hud-cursor-v"></div>
@@ -237,160 +234,142 @@
         </div>
     </div>
 
-    <!-- SCHERMATA 3: RISULTATO E MATEMATICA -->
+    <!-- SCHERMATA 4: RISULTATO -->
     <div id="screen-result" class="ui-layer p-4">
-        <div class="glass-panel w-full max-w-md md:max-w-2xl animate-slide-up pb-6 pt-4 px-4 md:px-8">
+        <div class="glass-panel w-full max-w-md animate-slide-up pb-6 pt-4 px-4 md:px-6">
             
-            <div class="flex-shrink-0 text-center mb-4">
-                <h2 id="res-title" class="text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
-                <p id="res-subtitle" class="text-gray-300 text-[clamp(0.65rem,2vw,0.875rem)] uppercase tracking-[0.2em]">Rigore calciato</p>
+            <div class="text-center mb-4">
+                <h2 id="res-title" class="text-white font-black text-4xl md:text-5xl mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
+                <p id="res-subtitle" class="text-gray-300 text-xs md:text-sm uppercase tracking-[0.2em]">Esito</p>
             </div>
 
-            <div class="flex-1 min-h-0 overflow-y-auto custom-scroll w-full flex flex-col gap-4 mb-4 pr-1">
-                <div class="w-full bg-black/50 rounded-xl p-3 text-center border border-white/10 shadow-inner flex-shrink-0">
-                    <p class="text-[clamp(0.5rem,1.5vw,0.7rem)] text-gray-400 uppercase tracking-widest mb-1" id="lbl-scenario">Scenario di Rischio</p>
-                    <p class="text-white font-bold text-[clamp(0.75rem,2vw,1rem)]" id="lbl-bankroll">Partendo da 100€ • Puntando 1€ (1%)</p>
+            <div class="w-full bg-white rounded-xl overflow-hidden flex flex-col shadow-lg mb-4">
+                <div id="res-card-header" class="px-3 py-2 flex justify-between items-center border-b">
+                    <span id="res-bet-title" class="font-black uppercase text-sm">Hai scommesso: PUNTA</span>
+                    <span id="res-bet-odds" class="font-bold text-xs font-mono bg-white/50 px-2 py-0.5 rounded">@1.29</span>
                 </div>
-
-                <div class="w-full flex flex-col md:flex-row gap-4 flex-shrink-0 pb-2">
-                    <!-- Card BACK (Punta) -->
-                    <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-back-light)] shadow-lg">
-                        <div class="bg-[var(--bf-back-light)] px-3 py-2 flex justify-between items-center border-b border-[var(--bf-back)]/20">
-                            <span class="font-black text-[var(--bf-back)] uppercase text-[clamp(0.7rem,1.5vw,0.875rem)]" id="lbl-b-title">BACK (Punta)</span>
-                            <span class="font-bold text-[var(--bf-back)] text-[clamp(0.6rem,1.2vw,0.75rem)] font-mono bg-white/50 px-2 py-0.5 rounded">@1.29</span>
-                        </div>
-                        <div class="p-3 flex-1 flex flex-col justify-between">
-                            <div class="bg-gray-50 rounded p-2 mb-2 border border-gray-100">
-                                <span class="text-gray-400 text-[9px] font-bold uppercase block mb-1" id="lbl-b-math">Calcolo Matematico</span>
-                                <div id="val-back-math" class="text-[11px] font-mono leading-tight text-gray-700"></div>
-                            </div>
-                            <div class="flex justify-between items-end mb-2">
-                                <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-b-net">Risultato Netto</span>
-                                <span id="val-back-res" class="font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none"></span>
-                            </div>
-                            <p id="desc-back" class="text-[clamp(0.65rem,1.5vw,0.85rem)] text-gray-600 leading-snug"></p>
-                        </div>
+                <div class="p-4 flex flex-col">
+                    <div class="bg-gray-50 rounded p-3 mb-3 border border-gray-200">
+                        <span class="text-gray-500 text-[10px] font-bold uppercase block mb-1" id="lbl-res-math">Dettaglio Operazione</span>
+                        <div id="res-math-detail" class="text-xs font-mono leading-relaxed text-gray-800"></div>
                     </div>
-
-                    <!-- Card LAY (Banca) -->
-                    <div class="flex-1 bg-white rounded-xl overflow-hidden flex flex-col border-2 border-[var(--bf-lay-light)] shadow-lg">
-                        <div class="bg-[var(--bf-lay-light)] px-3 py-2 flex justify-between items-center border-b border-[var(--bf-lay)]/20">
-                            <span class="font-black text-[var(--bf-lay)] uppercase text-[clamp(0.7rem,1.5vw,0.875rem)]" id="lbl-l-title">LAY (Banca)</span>
-                            <span class="font-bold text-[var(--bf-lay)] text-[clamp(0.6rem,1.2vw,0.75rem)] font-mono bg-white/50 px-2 py-0.5 rounded">@1.31</span>
-                        </div>
-                        <div class="p-3 flex-1 flex flex-col justify-between">
-                            <div class="bg-gray-50 rounded p-2 mb-2 border border-gray-100">
-                                <span class="text-gray-400 text-[9px] font-bold uppercase block mb-1" id="lbl-l-math">Calcolo Matematico</span>
-                                <div id="val-lay-math" class="text-[11px] font-mono leading-tight text-gray-700"></div>
-                            </div>
-                            <div class="flex justify-between items-end mb-2">
-                                <span class="text-gray-500 text-[10px] md:text-xs font-bold uppercase" id="lbl-l-net">Risultato Netto</span>
-                                <span id="val-lay-res" class="font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none"></span>
-                            </div>
-                            <p id="desc-lay" class="text-[clamp(0.65rem,1.5vw,0.85rem)] text-gray-600 leading-snug"></p>
-                        </div>
+                    <div class="flex justify-between items-end border-t border-gray-100 pt-2">
+                        <span class="text-gray-800 text-xs font-black uppercase" id="lbl-res-net">Variazione Cassa</span>
+                        <span id="res-net-val" class="font-black text-2xl font-mono leading-none"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Footer (Fisso in basso) -->
-            <div class="flex-shrink-0 w-full flex justify-center mt-2">
-                <button id="btn-next" class="btn-primary">PROSSIMO RIGORE</button>
+            <div class="w-full bg-black/50 rounded-xl p-3 text-center border border-white/10 shadow-inner flex-shrink-0 mb-4">
+                <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1" id="lbl-new-bankroll">Nuovo Bankroll</p>
+                <p class="text-[var(--neon-green)] font-mono font-bold text-lg" id="val-new-bankroll">100.00€</p>
             </div>
+
+            <button id="btn-next" class="btn-primary w-full text-center">Prossima Scommessa</button>
         </div>
     </div>
 
-    <!-- SCRIPT LOGICA E RENDER -->
+    <!-- SCRIPT -->
     <script>
-        // --- INIZIALIZZAZIONE ICONA TELEGRAM ---
-        const tgIcon = new Image();
-        tgIcon.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#2AABEE" d="M12 24c6.627 0 12-5.373 12-12S18.627 0 12 0 0 5.373 0 12s5.373 12 12 12Z"/><path fill="#FFF" d="M5.44 11.977c3.905-1.706 6.509-2.828 7.812-3.367 3.716-1.542 4.488-1.811 4.993-1.825.111-.003.359.026.51.15.127.104.163.245.176.347.017.142.036.467.019.742-.196 3.161-1.042 10.686-1.478 14.154-.185 1.47-.585 1.96-1.002 2.01-.912.109-1.603-.578-2.484-1.156-1.378-.905-2.158-1.464-3.5-2.35-1.55-1.025-.545-1.588.337-2.493.23-.236 4.237-3.87 4.314-4.2.01-.04-.002-.095-.038-.121-.035-.027-.083-.018-.119-.01-.05.011-3.232 2.128-5.385 3.585-.315.213-.601.318-.857.313-.28-.006-.82-.16-1.22-.323-.49-.2-1.036-.305-.989-.645.024-.176.248-.356.666-.541Z"/></svg>');
+        // --- 0. VARIABILI FINANZIARIE E STATO ---
+        let bankroll = 100.00;
+        let bet = { type: 'back', stakePerc: 1, stakeAmt: 1.00, oddsBack: 1.29, oddsLay: 1.31, comm: 0.05, liability: 0, profit: 0 };
+        let gameState = 'IDLE'; 
+        let power = 0, aimH = 50, aimV = 50;
+        let pDir = 1, hDir = 1, vDir = 1;
+        let animFrame;
+        let hasShot = false; 
 
-        // --- 1. DIZIONARIO MULTILINGUA (Learning Academy Avanzato) ---
+        // 3D
+        let goalRect = { x: 0, y: 0, w: 0, h: 0, horizon: 0 };
+        let ballAnim = { x: 0, y: 0, scale: 1, tx: 0, ty: 0, targetScale: 0.35 };
+        let handsAnim = { x: 0, y: 0, tx: 0, ty: 0 };
+        let currentOutcome = '';
+
+        window.requestAnimFrame = (function(){
+            return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function( cb ){ window.setTimeout(cb, 1000 / 60); };
+        })();
+        window.cancelAnimFrame = (function(){
+            return window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.clearTimeout;
+        })();
+
+        // --- 1. MULTILINGUA ---
         const i18n = {
             it: {
-                start: "INIZIA ACCADEMIA", tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza", next: "PROSSIMO RIGORE",
+                btn_start: "INIZIA", btn_bet: "GIOCA RIGORE", btn_next: "PROSSIMA SCOMMESSA",
+                tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza",
                 step1: "1. POTENZA", step2: "2. DIREZIONE", step3: "3. ALTEZZA",
-                res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna",
-                scenario: "Lezione di Money Management", bankroll: "Bankroll: 100€ • Rischio: 1€ (1%)",
-                lbl_math: "Calcolo Matematico", lbl_net: "Risultato Netto",
-                b_title: "BACK (PUNTA)", l_title: "LAY (BANCA)",
-                b_win_math: "Stake: 1.00€<br>Lordo: +0.29€<br>Comm (5%): -0.01€", b_win_net: "+€0.28",
-                b_loss_math: "Stake: 1.00€<br>Perso: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
-                l_win_math: "Stake Banco: 3.23€<br>Lordo: +3.23€<br>Comm (5%): -0.16€", l_win_net: "+€3.07",
-                l_loss_math: "Rischio (Liab): 1.00€<br>Pagato: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
-                desc_b_w: "Scommettendo a favore, vinci il profitto calcolato dalla quota, trattenendo il tuo rischio iniziale.",
-                desc_b_l: "Scommettendo a favore, se l'evento non si verifica perdi esattamente lo stake puntato.",
-                desc_l_w: "Facendo il banco, tieni la puntata (Stake) di chi ha scommesso contro di te, dedotte le commissioni.",
-                desc_l_l: "Facendo il banco, l'evento si è verificato. Devi pagare la vincita al giocatore usando il tuo Rischio."
+                bet_title: "Scommessa", lbl_bankroll: "Bankroll", 
+                b_title: "PUNTA (SI)", l_title: "BANCA (NO)",
+                lbl_stake: "Stake (Puntata)", lbl_calc_stake: "Stake in Euro", lbl_calc_liab: "Rischio (Liability)", lbl_calc_prof: "Vincita Netta (-5% comm)",
+                res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", 
+                sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna",
+                res_bet_title: "Hai scommesso: ", lbl_res_math: "Dettaglio Operazione", lbl_res_net: "Variazione Cassa", lbl_new_bankroll: "Nuovo Bankroll",
+                txt_stake: "Stake", txt_gross: "Lordo", txt_comm: "Commissione 5%", txt_liab: "Rischio Pagato", txt_lost: "Stake Perso", txt_bankrupt: "BANCAROTTA! Ricaricati 100€ per continuare a imparare."
             },
             en: {
-                start: "START ACADEMY", tap: "Tap for Power", tap_aim: "Tap for Direction", tap_height: "Tap for Height", next: "NEXT PENALTY",
+                btn_start: "START", btn_bet: "PLAY PENALTY", btn_next: "NEXT BET",
+                tap: "Tap for Power", tap_aim: "Tap for Direction", tap_height: "Tap for Height",
                 step1: "1. POWER", step2: "2. DIRECTION", step3: "3. HEIGHT",
-                res_goal: "GOAL!", res_saved: "SAVED!", res_miss: "MISSED!", sub_goal: "Penalty Scored", sub_saved: "Keeper blocks it", sub_miss: "Over the bar",
-                scenario: "Risk Management Lesson", bankroll: "Bankroll: €100 • Risk: €1 (1%)",
-                lbl_math: "Math Breakdown", lbl_net: "Net Result",
+                bet_title: "Your Bet", lbl_bankroll: "Bankroll", 
                 b_title: "BACK (YES)", l_title: "LAY (NO)",
-                b_win_math: "Stake: €1.00<br>Gross: +€0.29<br>Comm (5%): -€0.01", b_win_net: "+€0.28",
-                b_loss_math: "Stake: €1.00<br>Lost: -€1.00<br>&nbsp;", b_loss_net: "-€1.00",
-                l_win_math: "Backer Stake: €3.23<br>Gross: +€3.23<br>Comm (5%): -€0.16", l_win_net: "+€3.07",
-                l_loss_math: "Risk (Liab): €1.00<br>Paid out: -€1.00<br>&nbsp;", l_loss_net: "-€1.00",
-                desc_b_w: "By backing the outcome, you win the profit calculated from the odds and keep your initial stake.",
-                desc_b_l: "By backing the outcome, you lose exactly the stake you risked if the event doesn't happen.",
-                desc_l_w: "By acting as the bookie, you keep the opponent's Stake minus exchange commissions.",
-                desc_l_l: "Acting as the bookie, the event happened. You must pay the winner using your Liability (Risk)."
+                lbl_stake: "Stake Amount", lbl_calc_stake: "Stake in Euros", lbl_calc_liab: "Real Risk (Liability)", lbl_calc_prof: "Net Win (-5% comm)",
+                res_goal: "GOAL!", res_saved: "SAVED!", res_miss: "MISSED!", 
+                sub_goal: "Penalty Scored", sub_saved: "Keeper blocks it", sub_miss: "Over the bar",
+                res_bet_title: "You bet: ", lbl_res_math: "Operation Details", lbl_res_net: "Net Return", lbl_new_bankroll: "New Bankroll",
+                txt_stake: "Stake", txt_gross: "Gross", txt_comm: "5% Commission", txt_liab: "Liability Paid", txt_lost: "Stake Lost", txt_bankrupt: "BANKRUPT! Reloaded €100 to keep learning."
             },
             es: {
-                start: "INICIAR ACADEMIA", tap: "Toca para Potencia", tap_aim: "Toca para Dirección", tap_height: "Toca para Altura", next: "SIGUIENTE PENALTI",
+                btn_start: "EMPEZAR", btn_bet: "JUGAR PENALTI", btn_next: "SIGUIENTE APUESTA",
+                tap: "Toca para Potencia", tap_aim: "Toca para Dirección", tap_height: "Toca para Altura",
                 step1: "1. POTENCIA", step2: "2. DIRECCIÓN", step3: "3. ALTURA",
-                res_goal: "¡GOL!", res_saved: "¡PARADA!", res_miss: "¡FUERA!", sub_goal: "Penalti Anotado", sub_saved: "El portero detiene", sub_miss: "Balón a la grada",
-                scenario: "Lección de Gestión de Riesgo", bankroll: "Banca: 100€ • Riesgo: 1€ (1%)",
-                lbl_math: "Cálculo Matemático", lbl_net: "Resultado Neto",
-                b_title: "BACK (A FAVOR)", l_title: "LAY (EN CONTRA)",
-                b_win_math: "Stake: 1.00€<br>Bruto: +0.29€<br>Com (5%): -0.01€", b_win_net: "+€0.28",
-                b_loss_math: "Stake: 1.00€<br>Pérdida: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
-                l_win_math: "Stake Rival: 3.23€<br>Bruto: +3.23€<br>Com (5%): -0.16€", l_win_net: "+€3.07",
-                l_loss_math: "Riesgo (Liab): 1.00€<br>Pagado: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
-                desc_b_w: "Al apostar a favor, ganas el beneficio calculado por la cuota y retienes tu stake inicial.",
-                desc_b_l: "Al apostar a favor, si el evento no ocurre pierdes exactamente el stake arriesgado.",
-                desc_l_w: "Al actuar como banca, te quedas con el Stake del oponente menos las comisiones.",
-                desc_l_l: "Actuando como banca, el evento ocurrió. Debes pagar al ganador usando tu Riesgo (Responsabilidad)."
+                bet_title: "Tu Apuesta", lbl_bankroll: "Saldo", 
+                b_title: "A FAVOR (SÍ)", l_title: "EN CONTRA (NO)",
+                lbl_stake: "Stake (Importe)", lbl_calc_stake: "Stake en Euros", lbl_calc_liab: "Riesgo Real (Liab)", lbl_calc_prof: "Ganancia Neta (-5%)",
+                res_goal: "¡GOL!", res_saved: "¡PARADA!", res_miss: "¡FUERA!", 
+                sub_goal: "Penalti Anotado", sub_saved: "El portero detiene", sub_miss: "Balón a la grada",
+                res_bet_title: "Apostaste: ", lbl_res_math: "Detalle Operación", lbl_res_net: "Retorno Neto", lbl_new_bankroll: "Nuevo Saldo",
+                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comisión 5%", txt_liab: "Riesgo Pagado", txt_lost: "Stake Perdido", txt_bankrupt: "¡BANCARROTA! Recargados 100€ para seguir aprendiendo."
             },
             pt: {
-                start: "INICIAR ACADEMIA", tap: "Toque para Força", tap_aim: "Toque para Direção", tap_height: "Toque para Altura", next: "PRÓXIMO PÊNALTI",
+                btn_start: "INICIAR", btn_bet: "JOGAR PÊNALTI", btn_next: "PRÓXIMA APOSTA",
+                tap: "Toque para Força", tap_aim: "Toque para Direção", tap_height: "Toque para Altura",
                 step1: "1. FORÇA", step2: "2. DIREÇÃO", step3: "3. ALTURA",
-                res_goal: "GOL!", res_saved: "DEFESA!", res_miss: "FORA!", sub_goal: "Pênalti Marcado", sub_saved: "Goleiro defende", sub_miss: "Bola na arquibancada",
-                scenario: "Lição de Gestão de Risco", bankroll: "Banca: 100€ • Risco: 1€ (1%)",
-                lbl_math: "Cálculo Matemático", lbl_net: "Resultado Líquido",
-                b_title: "BACK (A FAVOR)", l_title: "LAY (CONTRA)",
-                b_win_math: "Stake: 1.00€<br>Bruto: +0.29€<br>Com (5%): -0.01€", b_win_net: "+€0.28",
-                b_loss_math: "Stake: 1.00€<br>Perda: -1.00€<br>&nbsp;", b_loss_net: "-€1.00",
-                l_win_math: "Stake Rival: 3.23€<br>Bruto: +3.23€<br>Com (5%): -0.16€", l_win_net: "+€3.07",
-                l_loss_math: "Risco (Liab): 1.00€<br>Pago: -1.00€<br>&nbsp;", l_loss_net: "-€1.00",
-                desc_b_w: "Ao apostar a favor, você ganha o lucro calculado pela odd e mantém sua stake inicial.",
-                desc_b_l: "Ao apostar a favor, se o evento não ocorrer, você perde exatamente a stake arriscada.",
-                desc_l_w: "Atuando como banca, você fica com a Stake do oponente menos as comissões.",
-                desc_l_l: "Atuando como banca, o evento ocorreu. Você deve pagar ao vencedor usando seu Risco (Responsabilidade)."
+                bet_title: "Sua Aposta", lbl_bankroll: "Banca", 
+                b_title: "A FAVOR (SIM)", l_title: "CONTRA (NÃO)",
+                lbl_stake: "Valor (Stake)", lbl_calc_stake: "Stake em Euros", lbl_calc_liab: "Risco Real (Liab)", lbl_calc_prof: "Lucro Líquido (-5%)",
+                res_goal: "GOL!", res_saved: "DEFESA!", res_miss: "FORA!", 
+                sub_goal: "Pênalti Marcado", sub_saved: "Goleiro defende", sub_miss: "Bola na arquibancada",
+                res_bet_title: "Você apostou: ", lbl_res_math: "Detalhes da Operação", lbl_res_net: "Retorno Líquido", lbl_new_bankroll: "Nova Banca",
+                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comissão 5%", txt_liab: "Risco Pago", txt_lost: "Stake Perdida", txt_bankrupt: "BANCA QUEBRADA! Recarregado 100€ para continuar aprendendo."
             }
         };
 
-        let currentLang = 'it'; // Default in Italiano
+        let currentLang = 'it';
         
         function updateTexts() {
             const t = i18n[currentLang];
-            document.getElementById('lbl-start-text').innerText = t.start;
-            document.getElementById('hud-instruction').innerText = t.tap;
-            document.getElementById('btn-next').innerText = t.next;
-            document.getElementById('lbl-scenario').innerText = t.scenario;
-            document.getElementById('lbl-bankroll').innerText = t.bankroll;
+            document.getElementById('btn-goto-bet').innerText = t.btn_start;
+            document.getElementById('bet-title').innerText = t.bet_title;
+            document.getElementById('bet-bankroll-lbl').innerText = t.lbl_bankroll;
+            document.getElementById('lbl-btn-back').innerText = t.b_title;
+            document.getElementById('lbl-btn-lay').innerText = t.l_title;
+            document.getElementById('lbl-stake').innerText = t.lbl_stake;
+            document.getElementById('lbl-calc-stake').innerText = t.lbl_calc_stake;
+            document.getElementById('lbl-calc-liability').innerText = t.lbl_calc_liab;
+            document.getElementById('lbl-calc-profit').innerText = t.lbl_calc_prof;
+            document.getElementById('btn-confirm-bet').innerText = t.btn_bet;
             
-            // Labels strutturali
-            document.getElementById('lbl-b-title').innerText = t.b_title;
-            document.getElementById('lbl-l-title').innerText = t.l_title;
-            document.getElementById('lbl-b-math').innerText = t.lbl_math;
-            document.getElementById('lbl-l-math').innerText = t.lbl_math;
-            document.getElementById('lbl-b-net').innerText = t.lbl_net;
-            document.getElementById('lbl-l-net').innerText = t.lbl_net;
+            document.getElementById('hud-instruction').innerText = t.tap;
+            document.getElementById('hud-h-text').innerText = t.step1;
+            document.getElementById('hud-v-text').innerText = t.step3;
+
+            document.getElementById('lbl-res-math').innerText = t.lbl_res_math;
+            document.getElementById('lbl-res-net').innerText = t.lbl_res_net;
+            document.getElementById('lbl-new-bankroll').innerText = t.lbl_new_bankroll;
+            document.getElementById('btn-next').innerText = t.btn_next;
+
+            updateBetMath();
         }
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -402,9 +381,10 @@
             });
         });
 
-        // --- 2. GESTIONE STATI UI ---
+        // --- 2. GESTIONE UI ---
         const screens = {
             lang: document.getElementById('screen-lang'),
+            bet: document.getElementById('screen-bet'),
             game: document.getElementById('screen-game'),
             res: document.getElementById('screen-result')
         };
@@ -413,77 +393,121 @@
         function switchScreen(screenName) {
             Object.values(screens).forEach(s => s.classList.remove('ui-active'));
             if(screenName !== 'none') screens[screenName].classList.add('ui-active');
-            
             touchZone.style.display = screenName === 'game' ? 'block' : 'none';
         }
 
-        // --- 3. VARIABILI DI STATO ---
-        let gameState = 'IDLE'; // IDLE, POWER, AIM_H, AIM_V, SHOOTING, RESULT
-        let power = 0, aimH = 50, aimV = 50;
-        let pDir = 1, hDir = 1, vDir = 1;
-        let animFrame;
-        let hasShot = false; // Flag anti doppio-tap
+        // --- 3. LOGICA SCOMMESSE (BETTING) ---
+        const slider = document.getElementById('stake-slider');
+        const btnBack = document.getElementById('btn-back');
+        const btnLay = document.getElementById('btn-lay');
+        const btnConfirm = document.getElementById('btn-confirm-bet');
 
-        // Variabili Animazione 3D
-        let goalRect = { x: 0, y: 0, w: 0, h: 0, horizon: 0 };
-        let ballAnim = { x: 0, y: 0, scale: 1, tx: 0, ty: 0, targetScale: 0.35 };
-        let handsAnim = { x: 0, y: 0, tx: 0, ty: 0 };
-        let currentOutcome = '';
+        function openBetting() {
+            gameState = 'BETTING';
+            document.getElementById('bet-bankroll-val').innerText = bankroll.toFixed(2) + "€";
+            
+            // Adjust slider max so user can't select a liability larger than bankroll for Lay
+            // Actually, for simplicity and learning, slider is 1 to 100 percent of bankroll.
+            // We cap liability strictly if they choose LAY 100%.
+            slider.value = bet.stakePerc;
+            updateBetMath();
+            switchScreen('bet');
+        }
 
-        // Polyfill cross-browser per le animazioni
-        window.requestAnimFrame = (function(){
-            return  window.requestAnimationFrame       ||
-                    window.webkitRequestAnimationFrame ||
-                    window.mozRequestAnimationFrame    ||
-                    function( callback ){
-                        window.setTimeout(callback, 1000 / 60);
-                    };
-        })();
-        
-        window.cancelAnimFrame = (function(){
-            return  window.cancelAnimationFrame       ||
-                    window.webkitCancelAnimationFrame ||
-                    window.mozCancelAnimationFrame    ||
-                    window.clearTimeout;
-        })();
+        function setBetType(type) {
+            bet.type = type;
+            if(type === 'back') {
+                btnBack.classList.add('back-active'); btnBack.classList.remove('opacity-80', 'hover:opacity-100');
+                btnLay.classList.remove('lay-active'); btnLay.classList.add('opacity-80', 'hover:opacity-100');
+                document.getElementById('lbl-calc-liability').style.color = '#dc2626';
+            } else {
+                btnLay.classList.add('lay-active'); btnLay.classList.remove('opacity-80', 'hover:opacity-100');
+                btnBack.classList.remove('back-active'); btnBack.classList.add('opacity-80', 'hover:opacity-100');
+                // Evidenziare maggiormente il rischio nel lay
+                document.getElementById('lbl-calc-liability').style.color = 'var(--bf-lay)';
+            }
+            updateBetMath();
+        }
 
-        // --- 4. MOTORE GRAFICO CANVAS ---
+        btnBack.addEventListener('click', () => setBetType('back'));
+        btnLay.addEventListener('click', () => setBetType('lay'));
+
+        slider.addEventListener('input', (e) => {
+            bet.stakePerc = parseInt(e.target.value);
+            updateBetMath();
+        });
+
+        document.querySelectorAll('.quick-stake').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                bet.stakePerc = parseInt(e.target.getAttribute('data-val'));
+                slider.value = bet.stakePerc;
+                updateBetMath();
+            });
+        });
+
+        function updateBetMath() {
+            document.getElementById('val-stake-perc').innerText = bet.stakePerc + "%";
+            
+            let amt = bankroll * (bet.stakePerc / 100);
+            bet.stakeAmt = amt;
+
+            // Se è Lay, la Liability è calcolata prima per assicurarsi che l'utente possa permettersela.
+            // Nel betting exchange: Rischio Banca = Stake * (Quota - 1)
+            let maxStakeAllowed = bankroll / (bet.oddsLay - 1);
+            if (bet.type === 'lay' && amt > maxStakeAllowed) {
+                amt = maxStakeAllowed; // Cap for strict bankroll management
+                bet.stakeAmt = amt;
+            }
+
+            document.getElementById('calc-stake').innerText = amt.toFixed(2) + "€";
+
+            let gross = 0;
+            if (bet.type === 'back') {
+                bet.liability = amt;
+                gross = amt * (bet.oddsBack - 1);
+            } else {
+                bet.liability = amt * (bet.oddsLay - 1);
+                gross = amt; // Vinci lo stake di chi ha puntato
+            }
+
+            bet.profit = gross * (1 - bet.comm); // Net profit
+
+            document.getElementById('calc-liability').innerText = "-" + bet.liability.toFixed(2) + "€";
+            document.getElementById('calc-profit').innerText = "+" + bet.profit.toFixed(2) + "€";
+            
+            if (bet.stakeAmt <= 0.01) {
+                btnConfirm.disabled = true;
+            } else {
+                btnConfirm.disabled = false;
+            }
+        }
+
+        btnConfirm.addEventListener('click', startGameLoop);
+
+        // --- 4. MOTORE GRAFICO CANVAS (Restaurato e alleggerito) ---
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let w, h;
 
         function resize() {
-            w = window.innerWidth;
-            h = window.innerHeight;
+            w = window.innerWidth; h = window.innerHeight;
             const dpr = window.devicePixelRatio || 1;
-            canvas.width = w * dpr;
-            canvas.height = h * dpr;
+            canvas.width = w * dpr; canvas.height = h * dpr;
             ctx.scale(dpr, dpr);
 
-            // Calcolo dimensioni porta globale
             const horizon = h * 0.4;
             const maxGoalH = h * 0.45; 
             let goalW = Math.min(w * 0.7, 650); 
             let goalH = goalW * 0.4;
-
             if (goalH > maxGoalH) { goalH = maxGoalH; goalW = goalH / 0.4; }
             
-            goalRect = { 
-                x: (w - goalW) / 2, 
-                y: horizon - goalH + 20, 
-                w: goalW, 
-                h: goalH, 
-                horizon: horizon 
-            };
-
+            goalRect = { x: (w - goalW) / 2, y: horizon - goalH + 20, w: goalW, h: goalH, horizon: horizon };
             drawPitch();
         }
 
         function drawPitch() {
-            ctx.fillStyle = '#061a0d';
-            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#061a0d'; ctx.fillRect(0, 0, w, h);
 
-            // Prato con strisce prospettiche
             for (let i = 0; i < 10; i++) {
                 ctx.fillStyle = i % 2 === 0 ? '#114a22' : '#165c2b';
                 const yStart = goalRect.horizon + (i * (h - goalRect.horizon) / 10);
@@ -491,104 +515,64 @@
                 ctx.fillRect(0, yStart, w, yEnd - yStart);
             }
 
-            // Rete
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for(let i=0; i<=10; i++) {
-                let px = goalRect.x + (goalRect.w/10)*i;
-                ctx.moveTo(px, goalRect.y); ctx.lineTo(px, goalRect.y + goalRect.h);
-            }
-            for(let i=0; i<=5; i++) {
-                let py = goalRect.y + (goalRect.h/5)*i;
-                ctx.moveTo(goalRect.x, py); ctx.lineTo(goalRect.x + goalRect.w, py);
-            }
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.beginPath();
+            for(let i=0; i<=10; i++) { let px = goalRect.x + (goalRect.w/10)*i; ctx.moveTo(px, goalRect.y); ctx.lineTo(px, goalRect.y + goalRect.h); }
+            for(let i=0; i<=5; i++) { let py = goalRect.y + (goalRect.h/5)*i; ctx.moveTo(goalRect.x, py); ctx.lineTo(goalRect.x + goalRect.w, py); }
             ctx.stroke();
 
-            // Pali con ombra per maggiore profondità 3D
-            ctx.shadowColor = 'rgba(0,0,0,0.6)';
-            ctx.shadowBlur = 8;
-            ctx.shadowOffsetY = 4;
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 6;
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            ctx.moveTo(goalRect.x, goalRect.y + goalRect.h);
-            ctx.lineTo(goalRect.x, goalRect.y);
-            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y);
-            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y + goalRect.h);
+            ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.beginPath();
+            ctx.moveTo(goalRect.x, goalRect.y + goalRect.h); ctx.lineTo(goalRect.x, goalRect.y); ctx.lineTo(goalRect.x + goalRect.w, goalRect.y); ctx.lineTo(goalRect.x + goalRect.w, goalRect.y + goalRect.h);
             ctx.stroke();
             
-            // Reset ombra per non influire su palla e portiere
-            ctx.shadowColor = 'transparent';
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetY = 0;
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-            // Render condizionale e Animazione di Attesa (Idle)
             if (gameState === 'SHOOTING' || gameState === 'RESULT') {
                 drawHands(handsAnim.x, handsAnim.y);
                 drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
             } else {
-                // Movimento fluido e piacevole dell'icona Telegram nella porta
                 const time = Date.now() / 500;
                 handsAnim.x = w / 2 + Math.sin(time) * (goalRect.w * 0.18);
                 handsAnim.y = goalRect.y + goalRect.h * 0.45 + Math.cos(time * 1.3) * (goalRect.h * 0.1);
-                
                 drawHands(handsAnim.x, handsAnim.y);
-                drawBall(w / 2, h * 0.85, 1);
+                if (gameState !== 'BETTING') drawBall(w / 2, h * 0.85, 1);
             }
         }
 
         function drawHands(x, y) {
             const size = Math.max(45, Math.min(w * 0.18, h * 0.18, 100));
-            if (tgIcon.complete) {
-                // Aggiungiamo un'ombra per far risaltare il badge Telegram
-                ctx.shadowColor = 'rgba(0,0,0,0.6)';
-                ctx.shadowBlur = 10;
-                ctx.shadowOffsetY = 4;
-                ctx.drawImage(tgIcon, x - size/2, y - size/2, size, size);
-                // Reset ombra per non sporcare il rendering della palla
-                ctx.shadowColor = 'transparent';
-                ctx.shadowBlur = 0;
-                ctx.shadowOffsetY = 0;
-            }
+            ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+            ctx.fillText('👐', x, y);
+            ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         }
 
         function drawBall(x, y, scale = 1) {
-            // Scalatura dinamica sicura + prospettiva
             const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 70)) * scale;
-            ctx.font = `${ballSize}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // Ombra dinamica
-            ctx.fillStyle = `rgba(0,0,0,${0.5 * scale})`;
-            ctx.beginPath();
-            ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
+            ctx.font = `${ballSize}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillStyle = `rgba(0,0,0,${0.5 * scale})`; ctx.beginPath(); ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2); ctx.fill();
             ctx.fillText('⚽', x, y);
         }
 
-        // --- 5. LOGICA DI GIOCO ---
+        // --- 5. LOGICA DEL TIRO E DEL RISULTATO ---
         function startGameLoop() {
             hasShot = false;
             gameState = 'POWER';
             power = 0; aimH = 50; aimV = 50;
             pDir = 1; hDir = 1; vDir = 1;
             
-            // Reset UI Barre
             document.getElementById('hud-h-wrapper').style.display = 'block';
             document.getElementById('hud-h-wrapper').classList.add('active');
             document.getElementById('hud-h-fill').style.opacity = '1';
             document.getElementById('hud-h-target').style.display = 'none';
             document.getElementById('hud-h-cursor').style.display = 'none';
             document.getElementById('hud-h-text').innerText = i18n[currentLang].step1;
-            
             document.getElementById('hud-v-wrapper').style.display = 'none';
             document.getElementById('hud-v-wrapper').classList.remove('active');
             
-            document.getElementById('hud-instruction').innerText = i18n[currentLang].tap;
+            const t = i18n[currentLang];
+            document.getElementById('hud-instruction').innerText = t.tap;
 
             switchScreen('game');
             updateGameBars();
@@ -621,24 +605,26 @@
         }
 
         function handleShoot(e) {
-            if (hasShot || gameState === 'IDLE' || gameState === 'RESULT' || gameState === 'SHOOTING') return;
+            if (hasShot || gameState === 'IDLE' || gameState === 'BETTING' || gameState === 'RESULT' || gameState === 'SHOOTING') return;
             if (e && e.cancelable && e.type !== 'keydown') e.preventDefault();
             
+            const t = i18n[currentLang];
+
             if (gameState === 'POWER') {
                 gameState = 'AIM_H';
                 document.getElementById('hud-h-wrapper').classList.remove('active');
                 document.getElementById('hud-h-fill').style.opacity = '0.3';
                 document.getElementById('hud-h-target').style.display = 'block';
                 document.getElementById('hud-h-cursor').style.display = 'block';
-                document.getElementById('hud-h-text').innerText = i18n[currentLang].step2;
-                document.getElementById('hud-instruction').innerText = i18n[currentLang].tap_aim;
+                document.getElementById('hud-h-text').innerText = t.step2;
+                document.getElementById('hud-instruction').innerText = t.tap_aim;
             } 
             else if (gameState === 'AIM_H') {
                 gameState = 'AIM_V';
                 document.getElementById('hud-v-wrapper').style.display = 'block';
                 setTimeout(() => document.getElementById('hud-v-wrapper').classList.add('active'), 10);
-                document.getElementById('hud-v-text').innerText = i18n[currentLang].step3;
-                document.getElementById('hud-instruction').innerText = i18n[currentLang].tap_height;
+                document.getElementById('hud-v-text').innerText = t.step3;
+                document.getElementById('hud-instruction').innerText = t.tap_height;
             } 
             else if (gameState === 'AIM_V') {
                 hasShot = true;
@@ -650,49 +636,45 @@
             gameState = 'SHOOTING';
             window.cancelAnimFrame(animFrame);
             switchScreen('none');
-
-            // --- Logica Portiere con Curva di Distribuzione Normale (Box-Muller) ---
-            // 1. Genera un valore statistico puro (z-score)
-            let u = 0, v = 0;
-            while(u === 0) u = Math.random();
-            while(v === 0) v = Math.random();
-            let z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
             
-            // 2. Calcola la precisione effettiva del tiro del giocatore (0-100)
-            // Tiri puramente random hanno una precisione media di ~43
-            let pError = Math.abs(power - 80) * 0.5;
-            let hError = Math.abs(aimH - 50) * 0.8;
-            let vError = Math.abs(aimV - 50) * 0.8;
-            let shotAccuracy = 100 - (pError + hError + vError);
+            ballAnim.tx = goalRect.x - (goalRect.w * 0.2) + ((aimH / 100) * (goalRect.w * 1.4));
+            ballAnim.ty = (goalRect.y + goalRect.h) - ((aimV / 100) * (goalRect.h * 1.3));
 
-            // 3. Il portiere salva in base a una curva normale centrata sulla media dei tiri random
-            // Questo assicura matematicamente il 50% dei salvataggi su campioni casuali
-            let goalieSkill = 43 + (z * 15);
-            
-            if (power > 95 || power < 20 || aimH > 85 || aimH < 15 || aimV > 85 || aimV < 15) {
-                currentOutcome = 'miss'; // Palla fuori (Errori gravi)
-            } else if (shotAccuracy > goalieSkill) {
-                currentOutcome = 'goal'; // Attaccante supera l'algoritmo
+            if (power > 95) ballAnim.ty -= goalRect.h * 0.5; 
+            else if (power < 30) ballAnim.ty += goalRect.h * 0.3; 
+
+            const isInsideX = ballAnim.tx > goalRect.x && ballAnim.tx < goalRect.x + goalRect.w;
+            const isInsideY = ballAnim.ty > goalRect.y && ballAnim.ty < goalRect.y + goalRect.h;
+            const isTargeted = isInsideX && isInsideY;
+
+            if (!isTargeted) {
+                currentOutcome = 'miss';
             } else {
-                currentOutcome = 'saved'; // Il portiere Telegram ci arriva!
+                let u = 0, v = 0;
+                while(u === 0) u = Math.random();
+                while(v === 0) v = Math.random();
+                let z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+                
+                let pError = Math.abs(power - 80) * 0.5;
+                let hError = Math.abs(aimH - 50) * 0.8;
+                let vError = Math.abs(aimV - 50) * 0.8;
+                let shotAccuracy = 100 - (pError + hError + vError);
+
+                let goalieSkill = 43 + (z * 15);
+                
+                if (shotAccuracy > goalieSkill) {
+                    currentOutcome = 'goal';
+                } else {
+                    currentOutcome = 'saved';
+                }
             }
 
-            // Setup parametri animazione
-            ballAnim.x = w / 2; 
-            ballAnim.y = h * 0.85; 
-            ballAnim.scale = 1;
+            ballAnim.x = w / 2; ballAnim.y = h * 0.85; ballAnim.scale = 1;
+            handsAnim.x = w / 2; handsAnim.y = goalRect.y + goalRect.h / 2;
             
-            // Mappa Direzione (0-100)
-            ballAnim.tx = goalRect.x - (goalRect.w * 0.15) + ((aimH / 100) * (goalRect.w * 1.3));
-            // Mappa Altezza (0-100)
-            ballAnim.ty = (goalRect.y + goalRect.h) - ((aimV / 100) * (goalRect.h * 1.15));
-
-            // Il tuffo del portiere parte dalla sua posizione attuale fluttuante!
             if (currentOutcome === 'saved') {
-                handsAnim.tx = ballAnim.tx; 
-                handsAnim.ty = ballAnim.ty;
+                handsAnim.tx = ballAnim.tx; handsAnim.ty = ballAnim.ty;
             } else {
-                // Tuffo spettacolare ma dal lato opposto
                 handsAnim.tx = ballAnim.tx < w / 2 ? goalRect.x + goalRect.w * 0.8 : goalRect.x + goalRect.w * 0.2;
                 handsAnim.ty = goalRect.y + goalRect.h * 0.8;
             }
@@ -703,18 +685,15 @@
         function updateShooting() {
             if (gameState !== 'SHOOTING') return;
 
-            // Interpolazione fisica e prospettiva
             ballAnim.x += (ballAnim.tx - ballAnim.x) * 0.08;
             ballAnim.y += (ballAnim.ty - ballAnim.y) * 0.08;
             ballAnim.scale += (ballAnim.targetScale - ballAnim.scale) * 0.08;
 
-            // Il portiere Telegram scatta in modo reattivo
             handsAnim.x += (handsAnim.tx - handsAnim.x) * 0.09;
             handsAnim.y += (handsAnim.ty - handsAnim.y) * 0.09;
 
             drawPitch();
 
-            // Controlla fine animazione (palla arrivata a destinazione)
             if (Math.abs(ballAnim.scale - ballAnim.targetScale) < 0.015) {
                 gameState = 'RESULT';
                 setTimeout(() => showResult(currentOutcome), 250);
@@ -726,91 +705,100 @@
 
         function showResult(outcome) {
             const t = i18n[currentLang];
+            const isGoal = outcome === 'goal';
+            
+            // Core Logic for betting outcomes
+            let betWon = false;
+            if (bet.type === 'back' && isGoal) betWon = true;
+            if (bet.type === 'lay' && !isGoal) betWon = true;
+
+            // Header Setup
             const titleEl = document.getElementById('res-title');
             const subEl = document.getElementById('res-subtitle');
             
-            // Elementi Back
-            const valBackMath = document.getElementById('val-back-math');
-            const valBackRes = document.getElementById('val-back-res');
-            const descBack = document.getElementById('desc-back');
-            
-            // Elementi Lay
-            const valLayMath = document.getElementById('val-lay-math');
-            const valLayRes = document.getElementById('val-lay-res');
-            const descLay = document.getElementById('desc-lay');
-
-            if (outcome === 'goal') {
-                // UI Header
+            if (isGoal) {
                 titleEl.innerText = t.res_goal; 
                 titleEl.className = "text-[#00ff44] font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)] leading-tight";
                 subEl.innerText = t.sub_goal;
-                
-                // BACK vince
-                valBackMath.innerHTML = t.b_win_math;
-                valBackRes.innerText = t.b_win_net; 
-                valBackRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-green-600";
-                descBack.innerText = t.desc_b_w;
-                
-                // LAY perde
-                valLayMath.innerHTML = t.l_loss_math;
-                valLayRes.innerText = t.l_loss_net; 
-                valLayRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-red-600";
-                descLay.innerText = t.desc_l_l;
             } else {
-                // UI Header
                 titleEl.innerText = outcome === 'saved' ? t.res_saved : t.res_miss;
                 titleEl.className = "text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight";
                 subEl.innerText = outcome === 'saved' ? t.sub_saved : t.sub_miss;
+            }
 
-                // BACK perde
-                valBackMath.innerHTML = t.b_loss_math;
-                valBackRes.innerText = t.b_loss_net; 
-                valBackRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-red-600";
-                descBack.innerText = t.desc_b_l;
-                
-                // LAY vince
-                valLayMath.innerHTML = t.l_win_math;
-                valLayRes.innerText = t.l_win_net; 
-                valLayRes.className = "font-black text-[clamp(1.25rem,4vw,1.75rem)] font-mono leading-none text-green-600";
-                descLay.innerText = t.desc_l_w;
+            // Card Setup
+            const cardHeader = document.getElementById('res-card-header');
+            document.getElementById('res-bet-title').innerText = t.res_bet_title + (bet.type === 'back' ? t.b_title : t.l_title);
+            document.getElementById('res-bet-odds').innerText = bet.type === 'back' ? "@1.29" : "@1.31";
+            
+            if (bet.type === 'back') {
+                cardHeader.className = "px-3 py-2 flex justify-between items-center border-b bg-[var(--bf-back-light)] text-[var(--bf-back)]";
+            } else {
+                cardHeader.className = "px-3 py-2 flex justify-between items-center border-b bg-[var(--bf-lay-light)] text-[var(--bf-lay)]";
+            }
+
+            // Math Details
+            let mathHTML = "";
+            let netValStr = "";
+            let valClass = "";
+            
+            const grossValue = (bet.profit / (1 - bet.comm)).toFixed(2);
+            const commValue = (grossValue * bet.comm).toFixed(2);
+
+            if (betWon) {
+                mathHTML += `<div>${t.txt_stake}: <span class="font-bold">${bet.stakeAmt.toFixed(2)}€</span></div>`;
+                mathHTML += `<div>${t.txt_gross}: <span class="text-green-600 font-bold">+${grossValue}€</span></div>`;
+                mathHTML += `<div>${t.txt_comm}: <span class="text-red-500 font-bold">-${commValue}€</span></div>`;
+                netValStr = `+${bet.profit.toFixed(2)}€`;
+                valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-green-600";
+                bankroll += bet.profit;
+            } else {
+                if (bet.type === 'back') {
+                    mathHTML += `<div>${t.txt_lost}: <span class="text-red-600 font-bold">-${bet.liability.toFixed(2)}€</span></div>`;
+                } else {
+                    mathHTML += `<div>${t.txt_liab}: <span class="text-red-600 font-bold">-${bet.liability.toFixed(2)}€</span></div>`;
+                }
+                netValStr = `-${bet.liability.toFixed(2)}€`;
+                valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-red-600";
+                bankroll -= bet.liability;
+            }
+
+            document.getElementById('res-math-detail').innerHTML = mathHTML;
+            
+            const netVal = document.getElementById('res-net-val');
+            netVal.innerText = netValStr;
+            netVal.className = valClass;
+
+            // Check Bankrupt
+            if (bankroll < 0.01) {
+                bankroll = 100.00; // Reload
+                document.getElementById('val-new-bankroll').innerHTML = `100.00€ <br><span class="text-red-500 text-[10px] uppercase tracking-widest mt-1 block">${t.txt_bankrupt}</span>`;
+            } else {
+                document.getElementById('val-new-bankroll').innerText = bankroll.toFixed(2) + "€";
             }
 
             switchScreen('res');
             drawPitch(); 
         }
 
-        // --- 6. EVENT LISTENERS ---
-        document.getElementById('btn-start').addEventListener('click', startGameLoop);
-        document.getElementById('btn-next').addEventListener('click', startGameLoop);
+        // --- 6. EVENT LISTENERS INIT ---
+        document.getElementById('btn-goto-bet').addEventListener('click', openBetting);
+        document.getElementById('btn-next').addEventListener('click', openBetting);
 
         touchZone.addEventListener('mousedown', handleShoot);
+        touchZone.addEventListener('touchstart', function(e) { if (e.cancelable) e.preventDefault(); handleShoot(e); }, { passive: false });
         
-        // Gestione avanzata del touch per neutralizzare latenza e lag di zoom
-        touchZone.addEventListener('touchstart', function(e) {
-            if (e.cancelable) e.preventDefault(); 
-            handleShoot(e);
-        }, { passive: false });
-        
-        window.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                handleShoot(e);
-            }
-        });
+        window.addEventListener('keydown', (e) => { if (e.code === 'Space') { handleShoot(e); } });
 
-        // Loop per mantenere attiva l'animazione idle all'avvio
         function renderIdle() {
-            if (gameState === 'IDLE') {
+            if (gameState === 'IDLE' || gameState === 'BETTING') {
                 drawPitch();
                 window.requestAnimFrame(renderIdle);
             }
         }
 
-        // Inizializzazione con Debounce del Resize (stabilizza la grafica sui cellulari che nascondono/mostrano la barra url)
         updateTexts();
-        window.addEventListener('resize', () => {
-            clearTimeout(window.resizeTimer);
-            window.resizeTimer = setTimeout(resize, 100);
-        });
+        window.addEventListener('resize', () => { clearTimeout(window.resizeTimer); window.resizeTimer = setTimeout(resize, 100); });
         resize();
         renderIdle();
 
