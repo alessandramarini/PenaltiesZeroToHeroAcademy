@@ -126,42 +126,27 @@
         .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         @keyframes pulseSlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(0.97); box-shadow: 0 0 8px rgba(255,255,255,0.2); } }
         .animate-pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
-
-        .custom-scroll::-webkit-scrollbar { width: 6px; }
-        .custom-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 4px; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-
-        /* Social Share Buttons */
-        .social-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 44px; height: 44px; border-radius: 50%;
-            color: white; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-            border: none;
-        }
-        .social-btn:hover { transform: scale(1.1); box-shadow: 0 0 15px rgba(255,255,255,0.3); }
-        .social-wa { background: #25D366; }
-        .social-x { background: #000000; border: 1px solid rgba(255,255,255,0.2); }
-        .social-fb { background: #1877F2; }
-        .social-tg { background: #229ED9; }
-        .social-other { background: #4b5563; }
     </style>
 </head>
 <body>
-
     <canvas id="gameCanvas"></canvas>
     <div id="touch-zone"></div>
 
     <!-- SCHERMATA 1: SELEZIONE LINGUA -->
-    <div id="screen-lang" class="ui-layer ui-active p-4">
-        <div class="glass-panel p-8 flex flex-col items-center justify-center animate-slide-up" style="min-height: 350px;">
-            <div class="flex gap-4 md:gap-6 mb-12">
-                <button class="lang-btn active" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
-                <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
+    <div id="screen-lang" class="ui-layer ui-active p-4 flex items-center justify-center">
+        <div class="glass-panel p-6 flex flex-col items-center justify-center animate-slide-up shadow-2xl mx-auto" style="min-height: auto; max-width: 340px;">
+            <div class="mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,255,68,0.3)] border-2 border-[var(--neon-green)] overflow-hidden bg-black/50">
+                <img src="logo-tondo.jpeg" alt="Zero To Hero Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/061a0d/00ff44?text=Z2H'">
+            </div>
+            <h1 class="text-white font-black text-xl uppercase tracking-tighter mb-6 text-center drop-shadow-md">ZERO TO HERO ACADEMY</h1>
+            <div class="flex gap-3 md:gap-4 mb-8">
+                <button class="lang-btn active" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
+                <button class="lang-btn" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
                 <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/es.svg" alt="Español" loading="lazy"></button>
                 <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/br.svg" alt="Português" loading="lazy"></button>
             </div>
-            <div class="mt-auto flex justify-center w-full">
-                <button id="btn-goto-bet" class="btn-primary w-full text-center">Inizia / Start</button>
+            <div class="w-full">
+                <button id="btn-goto-bet" class="btn-primary w-full text-center py-3">START</button>
             </div>
         </div>
     </div>
@@ -273,28 +258,6 @@
                 </div>
             </div>
 
-            <!-- Social Share Bar -->
-            <div class="w-full bg-black/40 rounded-xl p-3 text-center border border-white/10 shadow-inner mb-4">
-                <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-3" id="lbl-share">Condividi sui Social</p>
-                <div class="flex justify-center gap-3">
-                    <button class="social-btn social-wa" data-platform="whatsapp" title="WhatsApp">
-                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                    </button>
-                    <button class="social-btn social-x" data-platform="x" title="X (Twitter)">
-                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.008 5.918H5.053z"/></svg>
-                    </button>
-                    <button class="social-btn social-fb" data-platform="facebook" title="Facebook">
-                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.469h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.469h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                    </button>
-                    <button class="social-btn social-tg" data-platform="telegram" title="Telegram">
-                        <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.888-.666 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-                    </button>
-                    <button class="social-btn social-other" id="btn-share-other" data-platform="other" title="Condividi su Instagram, TikTok, Discord...">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
-                    </button>
-                </div>
-            </div>
-
             <div class="flex justify-between items-center mb-4">
                 <span class="text-gray-400 text-xs uppercase font-bold" id="lbl-new-bankroll">Nuovo Bankroll</span>
                 <span class="text-[var(--neon-green)] font-mono font-bold text-xl" id="val-new-bankroll">100.00€</span>
@@ -304,7 +267,6 @@
         </div>
     </div>
 
-    <!-- SCRIPT -->
     <script>
         // --- 0. VARIABILI FINANZIARIE E STATO ---
         let bankroll = 100.00;
@@ -315,7 +277,7 @@
         let animFrame;
         let hasShot = false; 
 
-        // 3D
+        // 3D & Graphics State
         let goalRect = { x: 0, y: 0, w: 0, h: 0, horizon: 0 };
         let ballAnim = { x: 0, y: 0, scale: 1, tx: 0, ty: 0, targetScale: 0.35 };
         let handsAnim = { x: 0, y: 0, tx: 0, ty: 0 };
@@ -331,7 +293,7 @@
         // --- 1. MULTILINGUA ---
         const i18n = {
             it: {
-                btn_start: "INIZIA", btn_bet: "GIOCA RIGORE", btn_next: "PROSSIMA SCOMMESSA", lbl_share: "CONDIVIDI SUI SOCIAL", copied: "COPIATO!",
+                btn_start: "INIZIA", btn_bet: "GIOCA RIGORE", btn_next: "PROSSIMA SCOMMESSA",
                 tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza",
                 step1: "1. POTENZA", step2: "2. DIREZIONE", step3: "3. ALTEZZA",
                 bet_title: "Scommessa", lbl_bankroll: "Bankroll", 
@@ -343,7 +305,7 @@
                 txt_stake: "Stake", txt_gross: "Lordo", txt_comm: "Commissione 5%", txt_liab: "Rischio Pagato", txt_lost: "Stake Perso", txt_bankrupt: "BANCAROTTA! Ricaricati 100€ per continuare a imparare."
             },
             en: {
-                btn_start: "START", btn_bet: "PLAY PENALTY", btn_next: "NEXT BET", lbl_share: "SHARE ON SOCIAL", copied: "COPIED!",
+                btn_start: "START", btn_bet: "PLAY PENALTY", btn_next: "NEXT BET",
                 tap: "Tap for Power", tap_aim: "Tap for Direction", tap_height: "Tap for Height",
                 step1: "1. POWER", step2: "2. DIRECTION", step3: "3. HEIGHT",
                 bet_title: "Your Bet", lbl_bankroll: "Bankroll", 
@@ -355,7 +317,7 @@
                 txt_stake: "Stake", txt_gross: "Gross", txt_comm: "5% Commission", txt_liab: "Liability Paid", txt_lost: "Stake Lost", txt_bankrupt: "BANKRUPT! Reloaded €100 to keep learning."
             },
             es: {
-                btn_start: "EMPEZAR", btn_bet: "JUGAR PENALTI", btn_next: "SIGUIENTE APUESTA", lbl_share: "COMPARTIR EN SOCIALES", copied: "¡COPIADO!",
+                btn_start: "EMPEZAR", btn_bet: "JUGAR PENALTI", btn_next: "SIGUIENTE APUESTA",
                 tap: "Toca para Potencia", tap_aim: "Toca para Dirección", tap_height: "Toca para Altura",
                 step1: "1. POTENCIA", step2: "2. DIRECCIÓN", step3: "3. ALTURA",
                 bet_title: "Tu Apuesta", lbl_bankroll: "Saldo", 
@@ -367,7 +329,7 @@
                 txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comisión 5%", txt_liab: "Riesgo Pagado", txt_lost: "Stake Perdido", txt_bankrupt: "¡BANCARROTA! Recargados 100€ para seguir aprendiendo."
             },
             pt: {
-                btn_start: "INICIAR", btn_bet: "JOGAR PÊNALTI", btn_next: "PRÓXIMA APOSTA", lbl_share: "COMPARTILHAR NAS REDES", copied: "COPIADO!",
+                btn_start: "INICIAR", btn_bet: "JOGAR PÊNALTI", btn_next: "PRÓXIMA APOSTA",
                 tap: "Toque para Força", tap_aim: "Toque para Direção", tap_height: "Toque para Altura",
                 step1: "1. FORÇA", step2: "2. DIREÇÃO", step3: "3. ALTURA",
                 bet_title: "Sua Aposta", lbl_bankroll: "Banca", 
@@ -380,7 +342,7 @@
             }
         };
 
-        let currentLang = 'it';
+        let currentLang = 'en';
         
         function updateTexts() {
             const t = i18n[currentLang];
@@ -403,7 +365,6 @@
             document.getElementById('lbl-res-net').innerText = t.lbl_res_net;
             document.getElementById('lbl-new-bankroll').innerText = t.lbl_new_bankroll;
             document.getElementById('btn-next').innerText = t.btn_next;
-            document.getElementById('lbl-share').innerText = t.lbl_share;
 
             updateBetMath();
         }
@@ -534,8 +495,10 @@
         }
 
         function drawPitch() {
+            // Sfondo verde scuro
             ctx.fillStyle = '#061a0d'; ctx.fillRect(0, 0, w, h);
 
+            // Strisce del prato
             for (let i = 0; i < 10; i++) {
                 ctx.fillStyle = i % 2 === 0 ? '#114a22' : '#165c2b';
                 const yStart = goalRect.horizon + (i * (h - goalRect.horizon) / 10);
@@ -543,21 +506,42 @@
                 ctx.fillRect(0, yStart, w, yEnd - yStart);
             }
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 1; ctx.beginPath();
-            for(let i=0; i<=10; i++) { let px = goalRect.x + (goalRect.w/10)*i; ctx.moveTo(px, goalRect.y); ctx.lineTo(px, goalRect.y + goalRect.h); }
-            for(let i=0; i<=5; i++) { let py = goalRect.y + (goalRect.h/5)*i; ctx.moveTo(goalRect.x, py); ctx.lineTo(goalRect.x + goalRect.w, py); }
+            // Rete della porta (effetto profondità visiva)
+            ctx.strokeStyle = 'rgba(255,255,255,0.15)'; 
+            ctx.lineWidth = 1; 
+            ctx.beginPath();
+            // Linee verticali della rete
+            for(let i=0; i<=20; i++) { 
+                let px = goalRect.x + (goalRect.w/20)*i; 
+                ctx.moveTo(px, goalRect.y); 
+                ctx.lineTo(px, goalRect.y + goalRect.h); 
+            }
+            // Linee orizzontali della rete
+            for(let i=0; i<=10; i++) { 
+                let py = goalRect.y + (goalRect.h/10)*i; 
+                ctx.moveTo(goalRect.x, py); 
+                ctx.lineTo(goalRect.x + goalRect.w, py); 
+            }
             ctx.stroke();
 
+            // Telaio della porta (Pali e Traversa)
             ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.beginPath();
-            ctx.moveTo(goalRect.x, goalRect.y + goalRect.h); ctx.lineTo(goalRect.x, goalRect.y); ctx.lineTo(goalRect.x + goalRect.w, goalRect.y); ctx.lineTo(goalRect.x + goalRect.w, goalRect.y + goalRect.h);
+            ctx.moveTo(goalRect.x, goalRect.y + goalRect.h); 
+            ctx.lineTo(goalRect.x, goalRect.y); 
+            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y); 
+            ctx.lineTo(goalRect.x + goalRect.w, goalRect.y + goalRect.h);
             ctx.stroke();
             
             ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
+            // Disegno elementi attivi
             if (gameState === 'SHOOTING' || gameState === 'RESULT') {
-                drawHands(handsAnim.x, handsAnim.y);
+                // Per rendere la parata realistica, disegniamo prima la palla, 
+                // poi le mani se la palla è vicina e deve sembrare bloccata.
+                // In generale l'ordine importa per l'effetto ottico.
                 drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
+                drawHands(handsAnim.x, handsAnim.y);
             } else {
                 const time = Date.now() / 500;
                 handsAnim.x = w / 2 + Math.sin(time) * (goalRect.w * 0.18);
@@ -572,6 +556,11 @@
             ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+            
+            // FIX: Ripristino opacità e colore pieno per impedire trasparenze "ereditate" alle Emoji
+            ctx.fillStyle = '#ffffff'; 
+            ctx.globalAlpha = 1.0;
+            
             ctx.fillText('👐', x, y);
             ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
         }
@@ -579,7 +568,16 @@
         function drawBall(x, y, scale = 1) {
             const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 70)) * scale;
             ctx.font = `${ballSize}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = `rgba(0,0,0,${0.5 * scale})`; ctx.beginPath(); ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2); ctx.fill();
+            
+            // Disegno l'ombra della palla
+            ctx.fillStyle = `rgba(0,0,0,0.5)`; 
+            ctx.beginPath(); 
+            ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2); 
+            ctx.fill();
+            
+            // FIX: Ripristino stile per impedire all'ombra di rendere la palla trasparente
+            ctx.fillStyle = '#ffffff';
+            ctx.globalAlpha = 1.0;
             ctx.fillText('⚽', x, y);
         }
 
@@ -660,77 +658,91 @@
             }
         }
 
-        // --- NUOVO ALGORITMO DINAMICO PER TIRO E PORTIERE ---
+        // --- ALGORITMO DI TIRO CON FORZATURA VISIVA CHIARE ---
         function shoot() {
             gameState = 'SHOOTING';
             window.cancelAnimFrame(animFrame);
             switchScreen('none');
             
-            // 1. Deviazione basata sulla potenza
-            let deviationScaleX = (power / 100) * (goalRect.w * 0.12);
-            let deviationScaleY = (power / 100) * (goalRect.h * 0.12);
-            let deviationX = (Math.random() - 0.5) * deviationScaleX;
-            let deviationY = (Math.random() - 0.5) * deviationScaleY;
+            // 1. Calcolo target base + deviazione dovuta alla troppa/poca potenza
+            let baseTx = goalRect.x + (aimH / 100) * goalRect.w;
+            let baseTy = (goalRect.y + goalRect.h) - ((aimV / 100) * goalRect.h);
 
-            ballAnim.tx = goalRect.x + (aimH / 100) * goalRect.w + deviationX;
-            ballAnim.ty = (goalRect.y + goalRect.h) - ((aimV / 100) * goalRect.h) + deviationY;
+            let deviationScaleX = (power / 100) * (goalRect.w * 0.15);
+            let deviationScaleY = (power / 100) * (goalRect.h * 0.15);
+            let rawTx = baseTx + (Math.random() - 0.5) * deviationScaleX;
+            let rawTy = baseTy + (Math.random() - 0.5) * deviationScaleY;
 
-            // Tiri troppo forti o deboli influenzano pesantemente l'altezza
-            if (power > 90) ballAnim.ty -= goalRect.h * 0.25; 
-            else if (power < 35) ballAnim.ty += goalRect.h * 0.25; 
+            // Influenze pesanti della potenza
+            if (power > 90) rawTy -= goalRect.h * 0.25; 
+            else if (power < 35) rawTy += goalRect.h * 0.25; 
 
-            // 2. Controllo se la palla è nello specchio della porta
-            const isInsideX = ballAnim.tx > goalRect.x && ballAnim.tx < goalRect.x + goalRect.w;
-            const isInsideY = ballAnim.ty > goalRect.y && ballAnim.ty < goalRect.y + goalRect.h;
+            // 2. Controllo primario: lo specchio della porta
+            const isInsideX = rawTx > goalRect.x + 10 && rawTx < goalRect.x + goalRect.w - 10;
+            const isInsideY = rawTy > goalRect.y + 10 && rawTy < goalRect.y + goalRect.h;
             
-            // Margine per il palo
-            const isPostX = !isInsideX && ballAnim.tx > goalRect.x - 15 && ballAnim.tx < goalRect.x + goalRect.w + 15;
-            const isPostY = !isInsideY && ballAnim.ty > goalRect.y - 15 && ballAnim.ty < goalRect.y + goalRect.h + 15;
+            const isPostX = !isInsideX && rawTx >= goalRect.x - 15 && rawTx <= goalRect.x + goalRect.w + 15;
+            const isPostY = !isInsideY && rawTy >= goalRect.y - 15 && rawTy <= goalRect.y + goalRect.h + 15;
 
+            // Determina esito primario
             if (!isInsideX || !isInsideY) {
                 currentOutcome = (isPostX || isPostY) ? 'post' : 'miss';
             } else {
-                // 3. Logica d'Intelligenza del Portiere
-                const ballZoneX = ballAnim.tx < goalRect.x + goalRect.w/3 ? -1 : (ballAnim.tx > goalRect.x + 2*goalRect.w/3 ? 1 : 0);
-                const ballZoneY = ballAnim.ty < goalRect.y + goalRect.h/2 ? 1 : -1;
+                // Logica Intelligenza Portiere
+                let distCenter = Math.abs(rawTx - (goalRect.x + goalRect.w/2)) / (goalRect.w/2); 
+                let keeperDifficulty = (distCenter * 60) + (power * 0.4); 
+                let keeperReach = 35 + Math.random() * 65; 
 
-                let keeperGuessX = 0;
-                let rng = Math.random();
-                if(rng < 0.50) keeperGuessX = ballZoneX; // Intuito!
-                else if(rng < 0.80) keeperGuessX = 0;    // Resta fermo al centro
-                else keeperGuessX = (ballZoneX === 0) ? (Math.random()>0.5?1:-1) : -ballZoneX; // Spiazzato!
-
-                let keeperGuessY = Math.random() > 0.4 ? 1 : -1; // Leggera propensione per i tiri alti
-
-                if (keeperGuessX === ballZoneX) {
-                    let distCenter = Math.abs(ballAnim.tx - (goalRect.x + goalRect.w/2)) / (goalRect.w/2); 
-                    let difficulty = (distCenter * 60) + (power * 0.4); 
-                    let keeperReach = 35 + Math.random() * 65; 
-
-                    if (difficulty > keeperReach && power > 45) {
-                        currentOutcome = 'goal';
-                    } else {
-                        currentOutcome = 'saved';
-                    }
-                } else {
+                if (keeperDifficulty > keeperReach && power > 45) {
                     currentOutcome = 'goal';
-                }
-
-                // 4. Animazione Portiere
-                if (currentOutcome === 'saved') {
-                    handsAnim.tx = ballAnim.tx;
-                    handsAnim.ty = ballAnim.ty;
                 } else {
-                    handsAnim.tx = goalRect.x + goalRect.w/2 + (keeperGuessX * (goalRect.w * 0.35));
-                    handsAnim.ty = goalRect.y + goalRect.h/2 - (keeperGuessY * (goalRect.h * 0.3));
+                    currentOutcome = 'saved';
                 }
             }
 
-            if (currentOutcome === 'miss' || currentOutcome === 'post') {
+            // 3. FORZATURE VISIVE: Assicurarsi che l'utente capisca perfettamente cosa è successo
+            if (currentOutcome === 'miss') {
+                // Va lontano e visibilmente fuori
+                ballAnim.targetScale = 0.2; 
+                ballAnim.tx = rawTx;
+                ballAnim.ty = rawTy;
+                // Se per caso è calcolato dentro, lo spingiamo palesemente sopra la traversa
+                if(ballAnim.tx > goalRect.x && ballAnim.tx < goalRect.x + goalRect.w && ballAnim.ty > goalRect.y) {
+                    ballAnim.ty = goalRect.y - goalRect.h * 0.4;
+                }
                 handsAnim.tx = goalRect.x + goalRect.w/2 + ((Math.random()-0.5) * goalRect.w * 0.6);
                 handsAnim.ty = goalRect.y + goalRect.h/2;
+            } 
+            else if (currentOutcome === 'post') {
+                ballAnim.targetScale = 0.35;
+                // Fissa la palla esattamene sul bordo
+                ballAnim.tx = rawTx < goalRect.x + goalRect.w/2 ? goalRect.x : goalRect.x + goalRect.w;
+                ballAnim.ty = Math.max(goalRect.y, Math.min(rawTy, goalRect.y + goalRect.h));
+                handsAnim.tx = goalRect.x + goalRect.w/2 + ((Math.random()-0.5) * goalRect.w * 0.6);
+                handsAnim.ty = goalRect.y + goalRect.h/2;
+            } 
+            else if (currentOutcome === 'saved') {
+                ballAnim.targetScale = 0.45; // Si ferma più vicina, al livello del portiere
+                ballAnim.tx = rawTx;
+                ballAnim.ty = rawTy;
+                // Le mani si posizionano ESATTAMENTE sulla palla per dare l'effetto di blocco
+                handsAnim.tx = ballAnim.tx;
+                // Aggiungiamo un leggero offset verticale per far cadere la palla in mezzo all'emoji 👐
+                handsAnim.ty = ballAnim.ty - 10; 
+            } 
+            else if (currentOutcome === 'goal') {
+                ballAnim.targetScale = 0.3; // Entra in profondità nella rete
+                // Assicuriamo che visivamente sia ben dentro lo specchio
+                ballAnim.tx = Math.max(goalRect.x + 30, Math.min(goalRect.x + goalRect.w - 30, rawTx));
+                ballAnim.ty = Math.max(goalRect.y + 20, Math.min(goalRect.y + goalRect.h - 20, rawTy));
+                
+                // Il portiere si tuffa dalla parte opposta o non ci arriva
+                let diveDir = ballAnim.tx > goalRect.x + goalRect.w/2 ? -1 : 1;
+                handsAnim.tx = goalRect.x + goalRect.w/2 + (diveDir * goalRect.w * 0.4);
+                handsAnim.ty = goalRect.y + goalRect.h * 0.6;
             }
 
+            // Reset posizioni iniziali
             ballAnim.x = w / 2; ballAnim.y = h * 0.85; ballAnim.scale = 1;
             handsAnim.x = w / 2; handsAnim.y = goalRect.y + goalRect.h * 0.6; 
             
@@ -751,7 +763,7 @@
 
             if (Math.abs(ballAnim.scale - ballAnim.targetScale) < 0.015) {
                 gameState = 'RESULT';
-                setTimeout(() => showResult(currentOutcome), 250);
+                setTimeout(() => showResult(currentOutcome), 400); // Leggero delay per ammirare il risultato
                 return;
             }
 
@@ -832,69 +844,9 @@
             drawPitch(); 
         }
 
-        // --- 6. EVENT LISTENERS E CONDIVISIONE SOCIAL ---
+        // --- 6. EVENT LISTENERS E INIZIALIZZAZIONE ---
         document.getElementById('btn-goto-bet').addEventListener('click', openBetting);
         document.getElementById('btn-next').addEventListener('click', openBetting);
-
-        // Gestore per i pulsanti dei social specifici
-        document.querySelectorAll('.social-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const platform = e.currentTarget.getAttribute('data-platform');
-                const t = i18n[currentLang];
-                let outcomeText = "";
-                
-                if(currentOutcome === 'goal') outcomeText = t.res_goal;
-                else if(currentOutcome === 'saved') outcomeText = t.res_saved;
-                else if(currentOutcome === 'post') outcomeText = t.res_post;
-                else outcomeText = t.res_miss;
-
-                const textToShare = `Ho appena finito una giocata su Zero To Hero - Betting Academy! ⚽\nEsito: ${outcomeText}`;
-                const urlToShare = `https://betting-exchange-room-landing-page.vercel.app/`;
-
-                const encodedText = encodeURIComponent(textToShare);
-                const encodedUrl = encodeURIComponent(urlToShare);
-
-                if (platform === 'whatsapp') {
-                    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textToShare + '\n\nℹ️ ' + urlToShare)}`, '_blank');
-                } 
-                else if (platform === 'x') {
-                    window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank');
-                } 
-                else if (platform === 'facebook') {
-                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank');
-                } 
-                else if (platform === 'telegram') {
-                    window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank');
-                } 
-                else if (platform === 'other') {
-                    // Utilizza la Web Share API (Nativa) per tutti gli altri (Instagram, TikTok, Discord, o appunti)
-                    if (navigator.share) {
-                        try {
-                            await navigator.share({
-                                title: 'Zero To Hero - Betting Academy',
-                                text: textToShare + "\n\nℹ️ ",
-                                url: urlToShare
-                            });
-                        } catch (err) { }
-                    } else {
-                        // Fallback: copia negli appunti
-                        const fullString = textToShare + "\n\nℹ️ " + urlToShare;
-                        try {
-                            await navigator.clipboard.writeText(fullString);
-                            alert(t.copied || "Link e messaggio copiati negli appunti!");
-                        } catch (err) {
-                            const textArea = document.createElement("textarea");
-                            textArea.value = fullString;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand("copy");
-                            textArea.remove();
-                            alert(t.copied || "Link e messaggio copiati negli appunti!");
-                        }
-                    }
-                }
-            });
-        });
 
         touchZone.addEventListener('mousedown', handleShoot);
         touchZone.addEventListener('touchstart', function(e) { if (e.cancelable) e.preventDefault(); handleShoot(e); }, { passive: false });
@@ -910,6 +862,8 @@
 
         updateTexts();
         window.addEventListener('resize', () => { clearTimeout(window.resizeTimer); window.resizeTimer = setTimeout(resize, 100); });
+        
+        // Avvio iniziale
         resize();
         renderIdle();
 
