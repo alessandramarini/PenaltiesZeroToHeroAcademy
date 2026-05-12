@@ -109,14 +109,9 @@
         .hud-bar-wrapper.active { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,68,0.4); }
         .hud-h { bottom: 25vh; left: 50%; transform: translateX(-50%); width: 75%; max-width: 500px; height: clamp(1.25rem, 4vh, 1.75rem); }
         .hud-v { right: 5vw; top: 40%; transform: translateY(-50%); height: 45vh; max-height: 400px; width: clamp(1.25rem, 4vw, 1.75rem); }
-        .hud-fill-h { height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444); transition: opacity 0.3s; }
+        .hud-fill-h { height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444); transition: width 0.05s linear; }
+        .hud-fill-v { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(0deg, #16a34a, var(--neon-green), #ef4444); transition: height 0.05s linear; }
         
-        .hud-target-h { position: absolute; top: 0; bottom: 0; left: 35%; width: 30%; background: rgba(0,255,68,0.3); border-left: 2px solid white; border-right: 2px solid white; box-shadow: 0 0 15px rgba(0,255,68,0.5); display: none; }
-        .hud-cursor-h { position: absolute; top: -2px; bottom: -2px; width: 6px; background: white; left: 50%; transform: translateX(-50%); box-shadow: 0 0 10px white; border-radius: 4px; display: none; z-index: 3; }
-        
-        .hud-target-v { position: absolute; left: 0; right: 0; top: 35%; height: 30%; background: rgba(0,255,68,0.3); border-top: 2px solid white; border-bottom: 2px solid white; box-shadow: 0 0 15px rgba(0,255,68,0.5); }
-        .hud-cursor-v { position: absolute; left: -2px; right: -2px; height: 6px; background: white; top: 50%; transform: translateY(-50%); box-shadow: 0 0 10px white; border-radius: 4px; z-index: 3; }
-
         .hud-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: clamp(0.65rem, 2.5vw, 0.9rem); text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em; }
         .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
 
@@ -219,15 +214,12 @@
         </div>
         
         <div id="hud-h-wrapper" class="hud-bar-wrapper hud-h">
-            <div id="hud-h-target" class="hud-target-h"></div>
             <div id="hud-h-fill" class="hud-fill-h"></div>
-            <div id="hud-h-cursor" class="hud-cursor-h"></div>
             <span id="hud-h-text" class="hud-text">1. POTENZA</span>
         </div>
 
         <div id="hud-v-wrapper" class="hud-bar-wrapper hud-v">
-            <div id="hud-v-target" class="hud-target-v"></div>
-            <div id="hud-v-cursor" class="hud-cursor-v"></div>
+            <div id="hud-v-fill" class="hud-fill-v"></div>
             <span id="hud-v-text" class="hud-text text-vertical">3. ALTEZZA</span>
         </div>
     </div>
@@ -591,11 +583,12 @@
             document.getElementById('hud-h-wrapper').style.display = 'block';
             document.getElementById('hud-h-wrapper').classList.add('active');
             document.getElementById('hud-h-fill').style.opacity = '1';
-            document.getElementById('hud-h-target').style.display = 'none';
-            document.getElementById('hud-h-cursor').style.display = 'none';
+            document.getElementById('hud-h-fill').style.width = '0%';
             document.getElementById('hud-h-text').innerText = i18n[currentLang].step1;
+            
             document.getElementById('hud-v-wrapper').style.display = 'none';
             document.getElementById('hud-v-wrapper').classList.remove('active');
+            document.getElementById('hud-v-fill').style.height = '0%';
             
             const t = i18n[currentLang];
             document.getElementById('hud-instruction').innerText = t.tap;
@@ -615,13 +608,13 @@
                 aimH += 2 * hDir;
                 if (aimH >= 100) { aimH = 100; hDir = -1; }
                 if (aimH <= 0) { aimH = 0; hDir = 1; }
-                document.getElementById('hud-h-cursor').style.left = `${aimH}%`;
+                document.getElementById('hud-h-fill').style.width = `${aimH}%`;
             }
             else if (gameState === 'AIM_V') {
                 aimV += 2 * vDir;
                 if (aimV >= 100) { aimV = 100; vDir = -1; }
                 if (aimV <= 0) { aimV = 0; vDir = 1; }
-                document.getElementById('hud-v-cursor').style.top = `${aimV}%`;
+                document.getElementById('hud-v-fill').style.height = `${aimV}%`;
             }
 
             drawPitch(); 
@@ -640,8 +633,6 @@
                 gameState = 'AIM_H';
                 document.getElementById('hud-h-wrapper').classList.remove('active');
                 document.getElementById('hud-h-fill').style.opacity = '0.3';
-                document.getElementById('hud-h-target').style.display = 'block';
-                document.getElementById('hud-h-cursor').style.display = 'block';
                 document.getElementById('hud-h-text').innerText = t.step2;
                 document.getElementById('hud-instruction').innerText = t.tap_aim;
             } 
