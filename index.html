@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="theme-color" content="#061a0d">
+    <meta name="description" content="Zero To Hero - Betting Academy Simulator">
     <title>Zero To Hero - Betting Academy</title>
     
     <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
@@ -55,9 +56,14 @@
             border-radius: 1.5rem;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1);
             max-height: 95vh;
+            overflow-y: auto; /* Permette lo scroll su schermi piccoli */
+            overflow-x: hidden;
             display: flex; flex-direction: column;
             width: 100%; max-width: 500px;
         }
+        
+        /* Nascondi scrollbar per estetica */
+        .glass-panel::-webkit-scrollbar { width: 0px; background: transparent; }
 
         .btn-primary {
             background: var(--neon-green); color: #000;
@@ -77,13 +83,14 @@
         .lang-btn {
             padding: 0; border-radius: 6px; border: 3px solid transparent; transition: all 0.2s;
             cursor: pointer; overflow: hidden;
-            width: clamp(60px, 12vw, 80px); height: clamp(40px, 8vw, 53px); display: block;
+            width: clamp(50px, 12vw, 80px); height: clamp(35px, 8vw, 53px); display: block;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             background: #fff;
+            flex: 1;
         }
         .lang-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .lang-btn:hover { transform: scale(1.05); }
-        .lang-btn.active { border-color: var(--neon-green); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,68,0.5); }
+        .lang-btn.active { border-color: var(--neon-green); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,68,0.5); z-index: 2;}
 
         input[type=range] {
             -webkit-appearance: none; width: 100%; background: transparent; padding: 10px 0;
@@ -130,17 +137,20 @@
     <!-- SCHERMATA 1: SELEZIONE LINGUA -->
     <div id="screen-lang" class="ui-layer ui-active p-4 flex items-center justify-center">
         <div class="glass-panel p-6 flex flex-col items-center justify-center animate-slide-up shadow-2xl mx-auto" style="min-height: auto; max-width: 340px;">
-            <div class="mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,255,68,0.3)] border-2 border-[var(--neon-green)] overflow-hidden bg-black/50">
-                <img src="logo-tondo.jpeg" alt="Zero To Hero Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/061a0d/00ff44?text=Z2H'">
+            <div class="mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,255,68,0.3)] border-2 border-[var(--neon-green)] overflow-hidden bg-black/50 shrink-0">
+                <img src="logo-tondo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/061a0d/00ff44?text=Z2H'">
             </div>
-            <h1 class="text-white font-black text-xl uppercase tracking-tighter mb-6 text-center drop-shadow-md">ZERO TO HERO ACADEMY</h1>
-            <div class="flex gap-3 md:gap-4 mb-8">
-                <button class="lang-btn active" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
-                <button class="lang-btn" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
+            <!-- ID aggiunto per traduzione dinamica -->
+            <h1 id="main-title" class="text-white font-black text-xl uppercase tracking-tighter mb-6 text-center drop-shadow-md shrink-0">ZERO TO HERO ACADEMY</h1>
+            
+            <!-- Ordine Lingue: EN, ES, PT, IT -->
+            <div class="flex gap-2 md:gap-4 mb-8 w-full justify-between px-2 shrink-0">
+                <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
                 <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/es.svg" alt="Español" loading="lazy"></button>
                 <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/br.svg" alt="Português" loading="lazy"></button>
+                <button class="lang-btn" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
             </div>
-            <div class="w-full">
+            <div class="w-full shrink-0">
                 <button id="btn-goto-bet" class="btn-primary w-full text-center py-3">START</button>
             </div>
         </div>
@@ -150,7 +160,7 @@
     <div id="screen-bet" class="ui-layer p-4">
         <div class="glass-panel p-4 md:p-6 flex flex-col animate-slide-up">
             
-            <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2">
+            <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2 shrink-0">
                 <h2 id="bet-title" class="text-white font-black text-xl md:text-2xl uppercase tracking-tighter">Scommessa</h2>
                 <div class="text-right">
                     <span id="bet-bankroll-lbl" class="text-gray-400 text-[10px] uppercase block">Bankroll</span>
@@ -158,18 +168,18 @@
                 </div>
             </div>
 
-            <div class="flex gap-3 mb-4">
+            <div class="flex gap-3 mb-4 shrink-0">
                 <button id="btn-back" class="bet-btn back-active flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center">
-                    <span id="lbl-btn-back" class="text-[var(--bf-back)] font-black text-xs md:text-sm uppercase block">PUNTA (SI)</span>
-                    <span class="font-mono text-gray-800 font-bold text-lg">@1.29</span>
+                    <span id="lbl-btn-back" class="text-[var(--bf-back)] font-black text-xs md:text-sm uppercase block text-center leading-tight h-8 flex items-center justify-center">PUNTA (SI)</span>
+                    <span class="font-mono text-gray-800 font-bold text-lg mt-1">@1.29</span>
                 </button>
                 <button id="btn-lay" class="bet-btn flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center opacity-80 hover:opacity-100">
-                    <span id="lbl-btn-lay" class="text-[var(--bf-lay)] font-black text-xs md:text-sm uppercase block">BANCA (NO)</span>
-                    <span class="font-mono text-gray-800 font-bold text-lg">@1.31</span>
+                    <span id="lbl-btn-lay" class="text-[var(--bf-lay)] font-black text-xs md:text-sm uppercase block text-center leading-tight h-8 flex items-center justify-center">BANCA (NO)</span>
+                    <span class="font-mono text-gray-800 font-bold text-lg mt-1">@1.31</span>
                 </button>
             </div>
 
-            <div class="bg-black/40 rounded-lg p-4 mb-4 border border-white/10">
+            <div class="bg-black/40 rounded-lg p-4 mb-4 border border-white/10 shrink-0">
                 <div class="flex justify-between text-gray-300 text-xs font-bold mb-2 uppercase">
                     <span id="lbl-stake">Stake (Puntata)</span>
                     <span id="val-stake-perc" class="text-white">1%</span>
@@ -177,16 +187,16 @@
                 
                 <input type="range" id="stake-slider" min="1" max="100" value="1" class="mb-3 w-full">
                 
-                <div class="flex justify-between gap-2 mt-1">
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="1">1%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="2">2%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="3">3%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-xs py-1 transition-colors" data-val="5">5%</button>
-                    <button class="quick-stake flex-1 bg-[var(--bf-lay)]/50 hover:bg-[var(--bf-lay)]/80 text-white font-bold rounded text-xs py-1 transition-colors" data-val="100">MAX</button>
+                <div class="flex justify-between gap-1 md:gap-2 mt-1">
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="1">1%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="2">2%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="3">3%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="5">5%</button>
+                    <button id="btn-max-stake" class="quick-stake flex-1 bg-[var(--bf-lay)]/50 hover:bg-[var(--bf-lay)]/80 text-white font-bold rounded text-[10px] md:text-xs py-1 transition-colors" data-val="100">MAX</button>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg p-3 mb-4 shadow-inner">
+            <div class="bg-white rounded-lg p-3 mb-4 shadow-inner shrink-0">
                 <div class="flex justify-between items-center mb-1">
                     <span class="text-gray-500 text-[10px] font-bold uppercase" id="lbl-calc-stake">Stake in Euro</span>
                     <span id="calc-stake" class="font-mono font-bold text-gray-800">1.00€</span>
@@ -201,7 +211,7 @@
                 </div>
             </div>
 
-            <button id="btn-confirm-bet" class="btn-primary w-full text-center">Gioca Rigore</button>
+            <button id="btn-confirm-bet" class="btn-primary w-full text-center shrink-0 mt-auto">Gioca Rigore</button>
         </div>
     </div>
 
@@ -228,12 +238,12 @@
     <div id="screen-result" class="ui-layer p-4">
         <div class="glass-panel w-full max-w-md animate-slide-up pb-6 pt-4 px-4 md:px-6">
             
-            <div class="text-center mb-4">
+            <div class="text-center mb-4 shrink-0">
                 <h2 id="res-title" class="text-white font-black text-4xl md:text-5xl mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
                 <p id="res-subtitle" class="text-gray-300 text-xs md:text-sm uppercase tracking-[0.2em]">Esito</p>
             </div>
 
-            <div class="w-full bg-white rounded-xl overflow-hidden flex flex-col shadow-lg mb-4">
+            <div class="w-full bg-white rounded-xl overflow-hidden flex flex-col shadow-lg mb-4 shrink-0">
                 <div id="res-card-header" class="px-3 py-2 flex justify-between items-center border-b">
                     <span id="res-bet-title" class="font-black uppercase text-sm">Hai scommesso: PUNTA</span>
                     <span id="res-bet-odds" class="font-bold text-xs font-mono bg-white/50 px-2 py-0.5 rounded">@1.29</span>
@@ -250,12 +260,12 @@
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex justify-between items-center mb-4 shrink-0">
                 <span class="text-gray-400 text-xs uppercase font-bold" id="lbl-new-bankroll">Nuovo Bankroll</span>
                 <span class="text-[var(--neon-green)] font-mono font-bold text-xl" id="val-new-bankroll">100.00€</span>
             </div>
 
-            <button id="btn-next" class="btn-primary w-full text-center">Prossima Scommessa</button>
+            <button id="btn-next" class="btn-primary w-full text-center shrink-0 mt-auto">Prossima Scommessa</button>
         </div>
     </div>
 
@@ -282,21 +292,10 @@
             return window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.clearTimeout;
         })();
 
-        // --- 1. MULTILINGUA ---
+        // --- 1. MULTILINGUA COMPLETO ---
         const i18n = {
-            it: {
-                btn_start: "INIZIA", btn_bet: "GIOCA RIGORE", btn_next: "PROSSIMA SCOMMESSA",
-                tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza",
-                step1: "1. POTENZA", step2: "2. DIREZIONE", step3: "3. ALTEZZA",
-                bet_title: "Scommessa", lbl_bankroll: "Bankroll", 
-                b_title: "PUNTA (SI)", l_title: "BANCA (NO)",
-                lbl_stake: "Stake (Puntata)", lbl_calc_stake: "Stake in Euro", lbl_calc_liab: "Rischio (Liability)", lbl_calc_prof: "Vincita Netta (-5% comm)",
-                res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", res_post: "PALO!",
-                sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna", sub_post: "Sfortunato!",
-                res_bet_title: "Hai scommesso: ", lbl_res_math: "Dettaglio Operazione", lbl_res_net: "Variazione Cassa", lbl_new_bankroll: "Nuovo Bankroll",
-                txt_stake: "Stake", txt_gross: "Lordo", txt_comm: "Commissione 5%", txt_liab: "Rischio Pagato", txt_lost: "Stake Perso", txt_bankrupt: "BANCAROTTA! Ricaricati 100€ per continuare a imparare."
-            },
             en: {
+                main_title: "ZERO TO HERO ACADEMY",
                 btn_start: "START", btn_bet: "PLAY PENALTY", btn_next: "NEXT BET",
                 tap: "Tap for Power", tap_aim: "Tap for Direction", tap_height: "Tap for Height",
                 step1: "1. POWER", step2: "2. DIRECTION", step3: "3. HEIGHT",
@@ -306,9 +305,11 @@
                 res_goal: "GOAL!", res_saved: "SAVED!", res_miss: "MISSED!", res_post: "POST!",
                 sub_goal: "Penalty Scored", sub_saved: "Keeper blocks it", sub_miss: "Over the bar", sub_post: "Unlucky!",
                 res_bet_title: "You bet: ", lbl_res_math: "Operation Details", lbl_res_net: "Net Return", lbl_new_bankroll: "New Bankroll",
-                txt_stake: "Stake", txt_gross: "Gross", txt_comm: "5% Commission", txt_liab: "Liability Paid", txt_lost: "Stake Lost", txt_bankrupt: "BANKRUPT! Reloaded €100 to keep learning."
+                txt_stake: "Stake", txt_gross: "Gross", txt_comm: "5% Commission", txt_liab: "Liability Paid", txt_lost: "Stake Lost", txt_bankrupt: "BANKRUPT! Reloaded €100 to keep learning.",
+                btn_max: "MAX"
             },
             es: {
+                main_title: "ACADEMIA ZERO TO HERO",
                 btn_start: "EMPEZAR", btn_bet: "JUGAR PENALTI", btn_next: "SIGUIENTE APUESTA",
                 tap: "Toca para Potencia", tap_aim: "Toca para Dirección", tap_height: "Toca para Altura",
                 step1: "1. POTENCIA", step2: "2. DIRECCIÓN", step3: "3. ALTURA",
@@ -318,9 +319,11 @@
                 res_goal: "¡GOL!", res_saved: "¡PARADA!", res_miss: "¡FUERA!", res_post: "¡POSTE!",
                 sub_goal: "Penalti Anotado", sub_saved: "El portero detiene", sub_miss: "Balón a la grada", sub_post: "¡Mala suerte!",
                 res_bet_title: "Apostaste: ", lbl_res_math: "Detalle Operación", lbl_res_net: "Retorno Neto", lbl_new_bankroll: "Nuevo Saldo",
-                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comisión 5%", txt_liab: "Riesgo Pagado", txt_lost: "Stake Perdido", txt_bankrupt: "¡BANCARROTA! Recargados 100€ para seguir aprendiendo."
+                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comisión 5%", txt_liab: "Riesgo Pagado", txt_lost: "Stake Perdido", txt_bankrupt: "¡BANCARROTA! Recargados 100€ para seguir aprendiendo.",
+                btn_max: "MÁX"
             },
             pt: {
+                main_title: "ACADEMIA ZERO TO HERO",
                 btn_start: "INICIAR", btn_bet: "JOGAR PÊNALTI", btn_next: "PRÓXIMA APOSTA",
                 tap: "Toque para Força", tap_aim: "Toque para Direção", tap_height: "Toque para Altura",
                 step1: "1. FORÇA", step2: "2. DIREÇÃO", step3: "3. ALTURA",
@@ -330,42 +333,86 @@
                 res_goal: "GOL!", res_saved: "DEFESA!", res_miss: "FORA!", res_post: "TRAVE!",
                 sub_goal: "Pênalti Marcado", sub_saved: "Goleiro defende", sub_miss: "Bola na arquibancada", sub_post: "Azar!",
                 res_bet_title: "Você apostou: ", lbl_res_math: "Detalhes da Operação", lbl_res_net: "Retorno Líquido", lbl_new_bankroll: "Nova Banca",
-                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comissão 5%", txt_liab: "Risco Pago", txt_lost: "Stake Perdida", txt_bankrupt: "BANCA QUEBRADA! Recarregado 100€ para continuar aprendendo."
+                txt_stake: "Stake", txt_gross: "Bruto", txt_comm: "Comissão 5%", txt_liab: "Risco Pago", txt_lost: "Stake Perdida", txt_bankrupt: "BANCA QUEBRADA! Recarregado 100€ para continuar aprendendo.",
+                btn_max: "MÁX"
+            },
+            it: {
+                main_title: "ZERO TO HERO ACADEMY",
+                btn_start: "INIZIA", btn_bet: "GIOCA RIGORE", btn_next: "PROSSIMA SCOMMESSA",
+                tap: "Tocca per la Potenza", tap_aim: "Tocca per la Direzione", tap_height: "Tocca per l'Altezza",
+                step1: "1. POTENZA", step2: "2. DIREZIONE", step3: "3. ALTEZZA",
+                bet_title: "Scommessa", lbl_bankroll: "Bankroll", 
+                b_title: "PUNTA (SI)", l_title: "BANCA (NO)",
+                lbl_stake: "Stake (Puntata)", lbl_calc_stake: "Stake in Euro", lbl_calc_liab: "Rischio (Liability)", lbl_calc_prof: "Vincita Netta (-5% comm)",
+                res_goal: "GOL!", res_saved: "PARATA!", res_miss: "FUORI!", res_post: "PALO!",
+                sub_goal: "Rigore Segnato", sub_saved: "Respinge il portiere", sub_miss: "Palla in tribuna", sub_post: "Sfortunato!",
+                res_bet_title: "Hai scommesso: ", lbl_res_math: "Dettaglio Operazione", lbl_res_net: "Variazione Cassa", lbl_new_bankroll: "Nuovo Bankroll",
+                txt_stake: "Stake", txt_gross: "Lordo", txt_comm: "Commissione 5%", txt_liab: "Rischio Pagato", txt_lost: "Stake Perso", txt_bankrupt: "BANCAROTTA! Ricaricati 100€ per continuare a imparare.",
+                btn_max: "MAX"
             }
         };
 
-        let currentLang = 'en';
+        // Auto-detect lingua del browser
+        const browserLang = (navigator.language || navigator.userLanguage).substring(0, 2).toLowerCase();
+        let currentLang = ['en', 'es', 'pt', 'it'].includes(browserLang) ? browserLang : 'en';
+        
+        function setActiveLanguageButton() {
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if(btn.getAttribute('data-lang') === currentLang) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
         
         function updateTexts() {
             const t = i18n[currentLang];
+            
+            // Titoli e Bottoni principali
+            document.getElementById('main-title').innerText = t.main_title;
             document.getElementById('btn-goto-bet').innerText = t.btn_start;
+            document.getElementById('btn-confirm-bet').innerText = t.btn_bet;
+            document.getElementById('btn-next').innerText = t.btn_next;
+            
+            // Scommessa
             document.getElementById('bet-title').innerText = t.bet_title;
             document.getElementById('bet-bankroll-lbl').innerText = t.lbl_bankroll;
             document.getElementById('lbl-btn-back').innerText = t.b_title;
             document.getElementById('lbl-btn-lay').innerText = t.l_title;
             document.getElementById('lbl-stake').innerText = t.lbl_stake;
+            document.getElementById('btn-max-stake').innerText = t.btn_max;
+            
+            // Calcoli Scommessa
             document.getElementById('lbl-calc-stake').innerText = t.lbl_calc_stake;
             document.getElementById('lbl-calc-liability').innerText = t.lbl_calc_liab;
             document.getElementById('lbl-calc-profit').innerText = t.lbl_calc_prof;
-            document.getElementById('btn-confirm-bet').innerText = t.btn_bet;
             
-            document.getElementById('hud-instruction').innerText = t.tap;
+            // HUD
+            // Non sovrascrivo hud-instruction se siamo già nello step di mira
+            if(gameState === 'IDLE' || gameState === 'POWER') {
+                document.getElementById('hud-instruction').innerText = t.tap;
+            }
             document.getElementById('hud-h-text').innerText = t.step1;
             document.getElementById('hud-v-text').innerText = t.step3;
 
+            // Risultato
             document.getElementById('lbl-res-math').innerText = t.lbl_res_math;
             document.getElementById('lbl-res-net').innerText = t.lbl_res_net;
             document.getElementById('lbl-new-bankroll').innerText = t.lbl_new_bankroll;
-            document.getElementById('btn-next').innerText = t.btn_next;
+
+            // Se siamo nella schermata dei risultati, aggiorniamo anche i testi dinamici generati a runtime
+            if(gameState === 'RESULT') {
+                 showResult(currentOutcome); // Richiama il render per ricalcolare i testi del div dinamicamente
+            }
 
             updateBetMath();
         }
 
         document.querySelectorAll('.lang-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
                 currentLang = e.currentTarget.getAttribute('data-lang');
+                setActiveLanguageButton();
                 updateTexts();
             });
         });
@@ -502,13 +549,11 @@
             ctx.strokeStyle = 'rgba(255,255,255,0.15)'; 
             ctx.lineWidth = 1; 
             ctx.beginPath();
-            // Linee verticali della rete
             for(let i=0; i<=20; i++) { 
                 let px = goalRect.x + (goalRect.w/20)*i; 
                 ctx.moveTo(px, goalRect.y); 
                 ctx.lineTo(px, goalRect.y + goalRect.h); 
             }
-            // Linee orizzontali della rete
             for(let i=0; i<=10; i++) { 
                 let py = goalRect.y + (goalRect.h/10)*i; 
                 ctx.moveTo(goalRect.x, py); 
@@ -527,14 +572,20 @@
             
             ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-            // Disegno elementi attivi
+            // FIX BUG LAYERS: Disegno elementi attivi
+            // L'ordine con cui si disegna nel Canvas determina lo Z-Index. Quello disegnato per ultimo sta sopra.
             if (gameState === 'SHOOTING' || gameState === 'RESULT') {
-                // Per rendere la parata realistica, disegniamo prima la palla, 
-                // poi le mani se la palla è vicina e deve sembrare bloccata.
-                // In generale l'ordine importa per l'effetto ottico.
-                drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
-                drawHands(handsAnim.x, handsAnim.y);
+                if (currentOutcome === 'saved') {
+                    // SE PARATA: Disegno prima le mani e POI la palla, così la palla sembra davanti o presa in pieno
+                    drawHands(handsAnim.x, handsAnim.y);
+                    drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
+                } else {
+                    // ALTRIMENTI: Disegno prima la palla e poi le mani
+                    drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
+                    drawHands(handsAnim.x, handsAnim.y);
+                }
             } else {
+                // In modalità IDLE o Betting, ordine standard
                 const time = Date.now() / 500;
                 handsAnim.x = w / 2 + Math.sin(time) * (goalRect.w * 0.18);
                 handsAnim.y = goalRect.y + goalRect.h * 0.45 + Math.cos(time * 1.3) * (goalRect.h * 0.1);
@@ -549,7 +600,6 @@
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
             
-            // FIX: Ripristino opacità e colore pieno per impedire trasparenze "ereditate" alle Emoji
             ctx.fillStyle = '#ffffff'; 
             ctx.globalAlpha = 1.0;
             
@@ -561,13 +611,11 @@
             const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 70)) * scale;
             ctx.font = `${ballSize}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             
-            // Disegno l'ombra della palla
             ctx.fillStyle = `rgba(0,0,0,0.5)`; 
             ctx.beginPath(); 
             ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2); 
             ctx.fill();
             
-            // FIX: Ripristino stile per impedire all'ombra di rendere la palla trasparente
             ctx.fillStyle = '#ffffff';
             ctx.globalAlpha = 1.0;
             ctx.fillText('⚽', x, y);
@@ -693,11 +741,9 @@
 
             // 3. FORZATURE VISIVE: Assicurarsi che l'utente capisca perfettamente cosa è successo
             if (currentOutcome === 'miss') {
-                // Va lontano e visibilmente fuori
                 ballAnim.targetScale = 0.2; 
                 ballAnim.tx = rawTx;
                 ballAnim.ty = rawTy;
-                // Se per caso è calcolato dentro, lo spingiamo palesemente sopra la traversa
                 if(ballAnim.tx > goalRect.x && ballAnim.tx < goalRect.x + goalRect.w && ballAnim.ty > goalRect.y) {
                     ballAnim.ty = goalRect.y - goalRect.h * 0.4;
                 }
@@ -706,28 +752,26 @@
             } 
             else if (currentOutcome === 'post') {
                 ballAnim.targetScale = 0.35;
-                // Fissa la palla esattamene sul bordo
                 ballAnim.tx = rawTx < goalRect.x + goalRect.w/2 ? goalRect.x : goalRect.x + goalRect.w;
                 ballAnim.ty = Math.max(goalRect.y, Math.min(rawTy, goalRect.y + goalRect.h));
                 handsAnim.tx = goalRect.x + goalRect.w/2 + ((Math.random()-0.5) * goalRect.w * 0.6);
                 handsAnim.ty = goalRect.y + goalRect.h/2;
             } 
             else if (currentOutcome === 'saved') {
-                ballAnim.targetScale = 0.45; // Si ferma più vicina, al livello del portiere
+                ballAnim.targetScale = 0.45; // Si ferma più vicina
                 ballAnim.tx = rawTx;
                 ballAnim.ty = rawTy;
-                // Le mani si posizionano ESATTAMENTE sulla palla per dare l'effetto di blocco
+                
+                // Le mani si posizionano ESATTAMENTE sulla palla
                 handsAnim.tx = ballAnim.tx;
                 // Aggiungiamo un leggero offset verticale per far cadere la palla in mezzo all'emoji 👐
                 handsAnim.ty = ballAnim.ty - 10; 
             } 
             else if (currentOutcome === 'goal') {
                 ballAnim.targetScale = 0.3; // Entra in profondità nella rete
-                // Assicuriamo che visivamente sia ben dentro lo specchio
                 ballAnim.tx = Math.max(goalRect.x + 30, Math.min(goalRect.x + goalRect.w - 30, rawTx));
                 ballAnim.ty = Math.max(goalRect.y + 20, Math.min(goalRect.y + goalRect.h - 20, rawTy));
                 
-                // Il portiere si tuffa dalla parte opposta o non ci arriva
                 let diveDir = ballAnim.tx > goalRect.x + goalRect.w/2 ? -1 : 1;
                 handsAnim.tx = goalRect.x + goalRect.w/2 + (diveDir * goalRect.w * 0.4);
                 handsAnim.ty = goalRect.y + goalRect.h * 0.6;
@@ -754,7 +798,7 @@
 
             if (Math.abs(ballAnim.scale - ballAnim.targetScale) < 0.015) {
                 gameState = 'RESULT';
-                setTimeout(() => showResult(currentOutcome), 400); // Leggero delay per ammirare il risultato
+                setTimeout(() => showResult(currentOutcome), 400);
                 return;
             }
 
@@ -806,7 +850,9 @@
                 mathHTML += `<div>${t.txt_comm}: <span class="text-red-500 font-bold">-${commValue}€</span></div>`;
                 netValStr = `+${bet.profit.toFixed(2)}€`;
                 valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-green-600";
-                bankroll += bet.profit;
+                
+                // Aggiornamento effettivo cassa solo la prima volta che entriamo per questo tiro
+                if(!titleEl.dataset.calculated) bankroll += bet.profit;
             } else {
                 if (bet.type === 'back') {
                     mathHTML += `<div>${t.txt_lost}: <span class="text-red-600 font-bold">-${bet.liability.toFixed(2)}€</span></div>`;
@@ -815,8 +861,10 @@
                 }
                 netValStr = `-${bet.liability.toFixed(2)}€`;
                 valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-red-600";
-                bankroll -= bet.liability;
+                
+                if(!titleEl.dataset.calculated) bankroll -= bet.liability;
             }
+            titleEl.dataset.calculated = "true";
 
             document.getElementById('res-math-detail').innerHTML = mathHTML;
             
@@ -837,7 +885,10 @@
 
         // --- 6. EVENT LISTENERS E INIZIALIZZAZIONE ---
         document.getElementById('btn-goto-bet').addEventListener('click', openBetting);
-        document.getElementById('btn-next').addEventListener('click', openBetting);
+        document.getElementById('btn-next').addEventListener('click', () => {
+            document.getElementById('res-title').removeAttribute('data-calculated'); // resetto il flag per il calcolo cassa
+            openBetting();
+        });
 
         touchZone.addEventListener('mousedown', handleShoot);
         touchZone.addEventListener('touchstart', function(e) { if (e.cancelable) e.preventDefault(); handleShoot(e); }, { passive: false });
@@ -851,10 +902,11 @@
             }
         }
 
-        updateTexts();
         window.addEventListener('resize', () => { clearTimeout(window.resizeTimer); window.resizeTimer = setTimeout(resize, 100); });
         
-        // Avvio iniziale
+        // Avvio iniziale (Bootstrap app)
+        setActiveLanguageButton();
+        updateTexts();
         resize();
         renderIdle();
 
