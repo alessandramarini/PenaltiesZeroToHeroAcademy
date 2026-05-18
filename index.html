@@ -45,88 +45,95 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             pointer-events: none;
             opacity: 0; transition: opacity 0.3s ease-in-out;
-            padding: env(safe-area-inset-top) 1rem env(safe-area-inset-bottom) 1rem;
+            padding: calc(env(safe-area-inset-top) + 4.5rem) 1rem env(safe-area-inset-bottom) 1rem;
         }
         .ui-active { opacity: 1; pointer-events: auto; }
 
         .glass-panel {
-            background: rgba(10, 29, 18, 0.85);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            background: rgba(10, 29, 18, 0.88);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1);
-            max-height: 95vh;
-            overflow-y: auto; /* Permette lo scroll su schermi piccoli */
+            border-radius: 1.25rem;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255,255,255,0.15);
+            max-height: calc(100vh - 120px); /* Ensures single page layout with no global scrolling */
+            overflow-y: auto;
             overflow-x: hidden;
             display: flex; flex-direction: column;
-            width: 100%; max-width: 500px;
+            width: 100%; max-width: 420px;
         }
         
-        /* Nascondi scrollbar per estetica */
+        /* Hide scrollbars for cinematic UI */
         .glass-panel::-webkit-scrollbar { width: 0px; background: transparent; }
 
         .btn-primary {
             background: var(--neon-green); color: #000;
             font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;
-            padding: clamp(0.75rem, 3vh, 1rem) 2.5rem; border-radius: 9999px;
-            box-shadow: 0 0 20px rgba(0, 255, 68, 0.3);
+            padding: clamp(0.6rem, 2.5vh, 0.9rem) 2rem; border-radius: 9999px;
+            box-shadow: 0 0 15px rgba(0, 255, 68, 0.25);
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             width: 100%;
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-size: clamp(0.85rem, 2.2vw, 1rem);
             flex-shrink: 0;
             border: none; cursor: pointer;
         }
-        .btn-primary:hover { box-shadow: 0 0 30px rgba(0, 255, 68, 0.5); transform: scale(1.02); }
-        .btn-primary:active { transform: scale(0.95); box-shadow: 0 0 10px rgba(0, 255, 68, 0.5); }
+        .btn-primary:hover { box-shadow: 0 0 25px rgba(0, 255, 68, 0.45); transform: scale(1.02); }
+        .btn-primary:active { transform: scale(0.96); box-shadow: 0 0 10px rgba(0, 255, 68, 0.4); }
         .btn-primary:disabled { background: #555; color: #888; box-shadow: none; cursor: not-allowed; transform: none; }
 
         .lang-btn {
-            padding: 0; border-radius: 6px; border: 3px solid transparent; transition: all 0.2s;
-            cursor: pointer; overflow: hidden;
-            width: clamp(50px, 12vw, 80px); height: clamp(35px, 8vw, 53px); display: block;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            background: #fff;
-            flex: 1;
+            padding: 0;
+            border-radius: 0.25rem;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+            width: 44px;
+            height: 28px;
+            display: block;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            background: #111;
+            position: relative;
+            flex-shrink: 0;
         }
         .lang-btn img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .lang-btn:hover { transform: scale(1.05); }
-        .lang-btn.active { border-color: var(--neon-green); transform: scale(1.15); box-shadow: 0 0 20px rgba(0,255,68,0.5); z-index: 2;}
+        .lang-btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.4); }
+        .lang-btn.active { border-color: var(--neon-green); transform: scale(1.1) translateY(-2px); box-shadow: 0 0 15px rgba(0,255,68,0.5); z-index: 2; }
 
         input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent; padding: 10px 0;
+            -webkit-appearance: none; width: 100%; background: transparent; padding: 6px 0;
         }
         input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
-            background: #ffffff; cursor: pointer; margin-top: -10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5); border: 3px solid var(--neon-green);
+            -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%;
+            background: #ffffff; cursor: pointer; margin-top: -8px;
+            box-shadow: 0 0 8px rgba(0,0,0,0.5); border: 2.5px solid var(--neon-green);
         }
         input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 6px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 3px;
+            width: 100%; height: 4px; cursor: pointer; background: rgba(255,255,255,0.2); border-radius: 2px;
         }
         input[type=range]:focus { outline: none; }
 
         .bet-btn { border: 2px solid transparent; transition: all 0.2s; }
-        .bet-btn.back-active { border-color: var(--bf-back); background-color: var(--bf-back-light); box-shadow: 0 0 15px rgba(43, 130, 201, 0.4); }
-        .bet-btn.lay-active { border-color: var(--bf-lay); background-color: var(--bf-lay-light); box-shadow: 0 0 15px rgba(216, 27, 96, 0.4); }
+        .bet-btn.back-active { border-color: var(--bf-back); background-color: var(--bf-back-light); box-shadow: 0 0 12px rgba(43, 130, 201, 0.35); }
+        .bet-btn.lay-active { border-color: var(--bf-lay); background-color: var(--bf-lay-light); box-shadow: 0 0 12px rgba(216, 27, 96, 0.35); }
 
         .hud-bar-wrapper {
             position: absolute; background: rgba(0,0,0,0.6); border: 2px solid rgba(255,255,255,0.5);
             border-radius: 999px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: none;
         }
         .hud-bar-wrapper.active { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0,255,68,0.4); }
-        .hud-h { bottom: 25vh; left: 50%; transform: translateX(-50%); width: 75%; max-width: 500px; height: clamp(1.25rem, 4vh, 1.75rem); }
-        .hud-v { right: 5vw; top: 40%; transform: translateY(-50%); height: 45vh; max-height: 400px; width: clamp(1.25rem, 4vw, 1.75rem); }
+        .hud-h { bottom: 25vh; left: 50%; transform: translateX(-50%); width: 75%; max-width: 440px; height: clamp(1.1rem, 3vh, 1.5rem); }
+        .hud-v { right: 5vw; top: 40%; transform: translateY(-50%); height: 40vh; max-height: 350px; width: clamp(1.1rem, 3vw, 1.5rem); }
         .hud-fill-h { height: 100%; width: 0%; background: linear-gradient(90deg, #16a34a, var(--neon-green), #ef4444); transition: width 0.05s linear; }
         .hud-fill-v { position: absolute; bottom: 0; left: 0; width: 100%; height: 0%; background: linear-gradient(0deg, #16a34a, var(--neon-green), #ef4444); transition: height 0.05s linear; }
         
-        .hud-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: clamp(0.65rem, 2.5vw, 0.9rem); text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em; }
+        .hud-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: clamp(0.6rem, 2.2vw, 0.8rem); text-shadow: 1px 1px 2px black; pointer-events: none; z-index: 2; letter-spacing: 0.1em; }
         .text-vertical { writing-mode: vertical-rl; transform: rotate(180deg); }
 
-        #touch-zone { position: absolute; inset: 0; z-index: 50; cursor: crosshair; display: none; }
+        #touch-zone { position: absolute; inset: 0; z-index: 45; cursor: crosshair; display: none; }
 
-        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes pulseSlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(0.97); box-shadow: 0 0 8px rgba(255,255,255,0.2); } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes pulseSlow { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.85; transform: scale(0.97); } }
         .animate-pulse-slow { animation: pulseSlow 2s ease-in-out infinite; }
     </style>
 </head>
@@ -134,91 +141,98 @@
     <canvas id="gameCanvas"></canvas>
     <div id="touch-zone"></div>
 
+    <!-- GLOBAL PERSISTENT HEADER -->
+    <div id="global-header" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 bg-black/60 border border-white/10 px-4 py-2 rounded-full backdrop-blur-md shadow-lg transition-all duration-300">
+        <div class="w-6 h-6 rounded-full overflow-hidden border border-[var(--neon-green)] flex items-center justify-center shrink-0 bg-black/40">
+            <img src="logo-tondo.jpeg" alt="Z2H Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/50x50/061a0d/00ff44?text=Z2H'">
+        </div>
+        <span class="text-white text-[10px] md:text-[11px] font-black tracking-widest uppercase shrink-0">BETTING EXCHANGE ROOM</span>
+    </div>
+
     <!-- SCHERMATA 1: SELEZIONE LINGUA -->
     <div id="screen-lang" class="ui-layer ui-active p-4 flex items-center justify-center">
-        <div class="glass-panel p-6 flex flex-col items-center justify-center animate-slide-up shadow-2xl mx-auto" style="min-height: auto; max-width: 340px;">
-            <div class="mb-4 w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_15px_rgba(0,255,68,0.3)] border-2 border-[var(--neon-green)] overflow-hidden bg-black/50 shrink-0">
+        <div class="glass-panel p-5 flex flex-col items-center justify-center animate-slide-up shadow-2xl mx-auto" style="min-height: auto; max-width: 320px;">
+            <div class="mb-3 w-16 h-16 rounded-full flex items-center justify-center shadow-[0_0_12px_rgba(0,255,68,0.25)] border-2 border-[var(--neon-green)] overflow-hidden bg-black/50 shrink-0">
                 <img src="logo-tondo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/100x100/061a0d/00ff44?text=Z2H'">
             </div>
-            <!-- ID aggiunto per traduzione dinamica -->
-            <h1 id="main-title" class="text-white font-black text-xl uppercase tracking-tighter mb-6 text-center drop-shadow-md shrink-0">ZERO TO HERO ACADEMY</h1>
+            <h1 id="main-title" class="text-white font-black text-lg uppercase tracking-tight mb-5 text-center drop-shadow-md shrink-0 leading-tight">ZERO TO HERO ACADEMY</h1>
             
-            <!-- Ordine Lingue: EN, ES, PT, IT -->
-            <div class="flex gap-2 md:gap-4 mb-8 w-full justify-between px-2 shrink-0">
+            <!-- Flags ordered: EN, ES, PT, IT as requested -->
+            <div class="flex gap-3 mb-6 w-full justify-center shrink-0">
                 <button class="lang-btn" data-lang="en"><img src="https://flagcdn.com/gb.svg" alt="English" loading="lazy"></button>
                 <button class="lang-btn" data-lang="es"><img src="https://flagcdn.com/es.svg" alt="Español" loading="lazy"></button>
                 <button class="lang-btn" data-lang="pt"><img src="https://flagcdn.com/br.svg" alt="Português" loading="lazy"></button>
                 <button class="lang-btn" data-lang="it"><img src="https://flagcdn.com/it.svg" alt="Italiano" loading="lazy"></button>
             </div>
             <div class="w-full shrink-0">
-                <button id="btn-goto-bet" class="btn-primary w-full text-center py-3">START</button>
+                <button id="btn-goto-bet" class="btn-primary w-full text-center py-2.5">START</button>
             </div>
         </div>
     </div>
 
     <!-- SCHERMATA 2: BETTING SLIP -->
     <div id="screen-bet" class="ui-layer p-4">
-        <div class="glass-panel p-4 md:p-6 flex flex-col animate-slide-up">
+        <div class="glass-panel p-3.5 md:p-5 flex flex-col animate-slide-up gap-2.5">
             
-            <div class="flex justify-between items-center mb-4 border-b border-white/20 pb-2 shrink-0">
-                <h2 id="bet-title" class="text-white font-black text-xl md:text-2xl uppercase tracking-tighter">Scommessa</h2>
+            <div class="flex justify-between items-center border-b border-white/20 pb-1.5 shrink-0">
+                <h2 id="bet-title" class="text-white font-black text-lg md:text-xl uppercase tracking-tighter">Scommessa</h2>
                 <div class="text-right">
-                    <span id="bet-bankroll-lbl" class="text-gray-400 text-[10px] uppercase block">Bankroll</span>
-                    <span id="bet-bankroll-val" class="text-[var(--neon-green)] font-mono font-black text-lg">100.00€</span>
+                    <span id="bet-bankroll-lbl" class="text-gray-400 text-[9px] uppercase block">Bankroll</span>
+                    <span id="bet-bankroll-val" class="text-[var(--neon-green)] font-mono font-black text-base">100.00€</span>
                 </div>
             </div>
 
-            <div class="flex gap-3 mb-4 shrink-0">
-                <button id="btn-back" class="bet-btn back-active flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center">
-                    <span id="lbl-btn-back" class="text-[var(--bf-back)] font-black text-xs md:text-sm uppercase block text-center leading-tight h-8 flex items-center justify-center">PUNTA (SI)</span>
-                    <span class="font-mono text-gray-800 font-bold text-lg mt-1">@1.29</span>
+            <div class="flex gap-2.5 shrink-0">
+                <button id="btn-back" class="bet-btn back-active flex-1 bg-white rounded-lg p-1.5 text-center cursor-pointer flex flex-col items-center">
+                    <span id="lbl-btn-back" class="text-[var(--bf-back)] font-black text-[10px] md:text-xs uppercase block text-center leading-tight h-5 flex items-center justify-center">PUNTA (SI)</span>
+                    <span class="font-mono text-gray-800 font-bold text-base mt-0.5">@1.29</span>
                 </button>
-                <button id="btn-lay" class="bet-btn flex-1 bg-white rounded-lg p-2 text-center cursor-pointer flex flex-col items-center opacity-80 hover:opacity-100">
-                    <span id="lbl-btn-lay" class="text-[var(--bf-lay)] font-black text-xs md:text-sm uppercase block text-center leading-tight h-8 flex items-center justify-center">BANCA (NO)</span>
-                    <span class="font-mono text-gray-800 font-bold text-lg mt-1">@1.31</span>
+                <button id="btn-lay" class="bet-btn flex-1 bg-white rounded-lg p-1.5 text-center cursor-pointer flex flex-col items-center opacity-80 hover:opacity-100">
+                    <span id="lbl-btn-lay" class="text-[var(--bf-lay)] font-black text-[10px] md:text-xs uppercase block text-center leading-tight h-5 flex items-center justify-center">BANCA (NO)</span>
+                    <span class="font-mono text-gray-800 font-bold text-base mt-0.5">@1.31</span>
                 </button>
             </div>
 
-            <div class="bg-black/40 rounded-lg p-4 mb-4 border border-white/10 shrink-0">
-                <div class="flex justify-between text-gray-300 text-xs font-bold mb-2 uppercase">
+            <div class="bg-black/40 rounded-lg p-3 border border-white/10 shrink-0">
+                <div class="flex justify-between text-gray-300 text-[10px] font-bold mb-1 uppercase">
                     <span id="lbl-stake">Stake (Puntata)</span>
                     <span id="val-stake-perc" class="text-white">1%</span>
                 </div>
                 
-                <input type="range" id="stake-slider" min="1" max="100" value="1" class="mb-3 w-full">
+                <input type="range" id="stake-slider" min="1" max="100" value="1" class="mb-2 w-full">
                 
-                <div class="flex justify-between gap-1 md:gap-2 mt-1">
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="1">1%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="2">2%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="3">3%</button>
-                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] md:text-xs py-1 transition-colors" data-val="5">5%</button>
-                    <button id="btn-max-stake" class="quick-stake flex-1 bg-[var(--bf-lay)]/50 hover:bg-[var(--bf-lay)]/80 text-white font-bold rounded text-[10px] md:text-xs py-1 transition-colors" data-val="100">MAX</button>
+                <div class="flex justify-between gap-1 mt-0.5">
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] py-1 transition-colors" data-val="1">1%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] py-1 transition-colors" data-val="2">2%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] py-1 transition-colors" data-val="3">3%</button>
+                    <button class="quick-stake flex-1 bg-white/10 hover:bg-white/20 text-white rounded text-[10px] py-1 transition-colors" data-val="5">5%</button>
+                    <button id="btn-max-stake" class="quick-stake flex-1 bg-[var(--bf-lay)]/50 hover:bg-[var(--bf-lay)]/80 text-white font-bold rounded text-[10px] py-1 transition-colors" data-val="100">MAX</button>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg p-3 mb-4 shadow-inner shrink-0">
-                <div class="flex justify-between items-center mb-1">
-                    <span class="text-gray-500 text-[10px] font-bold uppercase" id="lbl-calc-stake">Stake in Euro</span>
-                    <span id="calc-stake" class="font-mono font-bold text-gray-800">1.00€</span>
+            <div class="bg-white rounded-lg p-2.5 shadow-inner shrink-0">
+                <div class="flex justify-between items-center mb-0.5">
+                    <span class="text-gray-500 text-[9px] font-bold uppercase" id="lbl-calc-stake">Stake in Euro</span>
+                    <span id="calc-stake" class="font-mono font-bold text-gray-800 text-xs md:text-sm">1.00€</span>
                 </div>
-                <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
-                    <span class="text-red-500 text-[10px] font-black uppercase" id="lbl-calc-liability">Rischio Reale (Liability)</span>
-                    <span id="calc-liability" class="font-mono font-black text-red-600">-1.00€</span>
+                <div class="flex justify-between items-center mb-1 pb-1 border-b border-gray-100">
+                    <span class="text-red-500 text-[9px] font-black uppercase" id="lbl-calc-liability">Rischio Reale (Liability)</span>
+                    <span id="calc-liability" class="font-mono font-black text-red-600 text-xs md:text-sm">-1.00€</span>
                 </div>
                 <div class="flex justify-between items-center">
-                    <span class="text-green-600 text-[10px] font-black uppercase" id="lbl-calc-profit">Vincita Netta (-5% Comm)</span>
-                    <span id="calc-profit" class="font-mono font-black text-green-600 text-lg">+0.28€</span>
+                    <span class="text-green-600 text-[9px] font-black uppercase" id="lbl-calc-profit">Vincita Netta (-5% Comm)</span>
+                    <span id="calc-profit" class="font-mono font-black text-green-600 text-base">+0.28€</span>
                 </div>
             </div>
 
-            <button id="btn-confirm-bet" class="btn-primary w-full text-center shrink-0 mt-auto">Gioca Rigore</button>
+            <button id="btn-confirm-bet" class="btn-primary w-full text-center shrink-0 mt-1 py-2.5">Gioca Rigore</button>
         </div>
     </div>
 
     <!-- SCHERMATA 3: HUD DI GIOCO -->
     <div id="screen-game" class="ui-layer">
         <div class="absolute top-[12vh] text-center w-full">
-            <p id="hud-instruction" class="text-white font-bold text-[clamp(0.7rem,2vw,1rem)] tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-4 py-2 md:px-6 md:py-3 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 animate-pulse-slow">
+            <p id="hud-instruction" class="text-white font-bold text-[clamp(0.65rem,1.8vw,0.9rem)] tracking-widest uppercase bg-black/60 border border-white/10 inline-block px-4 py-2 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 animate-pulse-slow">
                 Tocca, Clicca o Spazio per tirare
             </p>
         </div>
@@ -236,36 +250,36 @@
 
     <!-- SCHERMATA 4: RISULTATO -->
     <div id="screen-result" class="ui-layer p-4">
-        <div class="glass-panel w-full max-w-md animate-slide-up pb-6 pt-4 px-4 md:px-6">
+        <div class="glass-panel w-full max-w-sm animate-slide-up p-3.5 md:p-5 gap-3">
             
-            <div class="text-center mb-4 shrink-0">
-                <h2 id="res-title" class="text-white font-black text-4xl md:text-5xl mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
-                <p id="res-subtitle" class="text-gray-300 text-xs md:text-sm uppercase tracking-[0.2em]">Esito</p>
+            <div class="text-center shrink-0">
+                <h2 id="res-title" class="text-white font-black text-3xl md:text-4xl mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight">GOL!</h2>
+                <p id="res-subtitle" class="text-gray-300 text-[10px] uppercase tracking-[0.2em] mt-0.5">Esito</p>
             </div>
 
-            <div class="w-full bg-white rounded-xl overflow-hidden flex flex-col shadow-lg mb-4 shrink-0">
-                <div id="res-card-header" class="px-3 py-2 flex justify-between items-center border-b">
-                    <span id="res-bet-title" class="font-black uppercase text-sm">Hai scommesso: PUNTA</span>
-                    <span id="res-bet-odds" class="font-bold text-xs font-mono bg-white/50 px-2 py-0.5 rounded">@1.29</span>
+            <div class="w-full bg-white rounded-xl overflow-hidden flex flex-col shadow-lg shrink-0">
+                <div id="res-card-header" class="px-3 py-1.5 flex justify-between items-center border-b">
+                    <span id="res-bet-title" class="font-black uppercase text-xs">Hai scommesso: PUNTA</span>
+                    <span id="res-bet-odds" class="font-bold text-[10px] font-mono bg-white/50 px-1.5 py-0.5 rounded">@1.29</span>
                 </div>
-                <div class="p-4 flex flex-col">
-                    <div class="bg-gray-50 rounded p-3 mb-3 border border-gray-200">
-                        <span class="text-gray-500 text-[10px] font-bold uppercase block mb-1" id="lbl-res-math">Dettaglio Operazione</span>
-                        <div id="res-math-detail" class="text-xs font-mono leading-relaxed text-gray-800"></div>
+                <div class="p-3 flex flex-col">
+                    <div class="bg-gray-50 rounded p-2 mb-2 border border-gray-150">
+                        <span class="text-gray-500 text-[9px] font-bold uppercase block mb-0.5" id="lbl-res-math">Dettaglio Operazione</span>
+                        <div id="res-math-detail" class="text-[11px] font-mono leading-relaxed text-gray-800"></div>
                     </div>
-                    <div class="flex justify-between items-end border-t border-gray-100 pt-2">
-                        <span class="text-gray-800 text-xs font-black uppercase" id="lbl-res-net">Variazione Cassa</span>
-                        <span id="res-net-val" class="font-black text-2xl font-mono leading-none"></span>
+                    <div class="flex justify-between items-end border-t border-gray-100 pt-1.5">
+                        <span class="text-gray-800 text-[10px] font-black uppercase" id="lbl-res-net">Variazione Cassa</span>
+                        <span id="res-net-val" class="font-black text-xl font-mono leading-none"></span>
                     </div>
                 </div>
             </div>
 
-            <div class="flex justify-between items-center mb-4 shrink-0">
-                <span class="text-gray-400 text-xs uppercase font-bold" id="lbl-new-bankroll">Nuovo Bankroll</span>
-                <span class="text-[var(--neon-green)] font-mono font-bold text-xl" id="val-new-bankroll">100.00€</span>
+            <div class="flex justify-between items-center shrink-0 py-0.5">
+                <span class="text-gray-400 text-[11px] uppercase font-bold" id="lbl-new-bankroll">Nuovo Bankroll</span>
+                <span class="text-[var(--neon-green)] font-mono font-bold text-lg" id="val-new-bankroll">100.00€</span>
             </div>
 
-            <button id="btn-next" class="btn-primary w-full text-center shrink-0 mt-auto">Prossima Scommessa</button>
+            <button id="btn-next" class="btn-primary w-full text-center shrink-0 mt-1 py-2.5">Prossima Scommessa</button>
         </div>
     </div>
 
@@ -352,7 +366,8 @@
             }
         };
 
-        // Auto-detect lingua del browser
+        // --- STREAMING_CHUNK: Detecting default system language... ---
+        // Auto-detect browser/device language
         const browserLang = (navigator.language || navigator.userLanguage).substring(0, 2).toLowerCase();
         let currentLang = ['en', 'es', 'pt', 'it'].includes(browserLang) ? browserLang : 'en';
         
@@ -369,13 +384,13 @@
         function updateTexts() {
             const t = i18n[currentLang];
             
-            // Titoli e Bottoni principali
+            // Core Titles & Main buttons
             document.getElementById('main-title').innerText = t.main_title;
             document.getElementById('btn-goto-bet').innerText = t.btn_start;
             document.getElementById('btn-confirm-bet').innerText = t.btn_bet;
             document.getElementById('btn-next').innerText = t.btn_next;
             
-            // Scommessa
+            // Betting context
             document.getElementById('bet-title').innerText = t.bet_title;
             document.getElementById('bet-bankroll-lbl').innerText = t.lbl_bankroll;
             document.getElementById('lbl-btn-back').innerText = t.b_title;
@@ -383,27 +398,25 @@
             document.getElementById('lbl-stake').innerText = t.lbl_stake;
             document.getElementById('btn-max-stake').innerText = t.btn_max;
             
-            // Calcoli Scommessa
+            // Slip mathematical values
             document.getElementById('lbl-calc-stake').innerText = t.lbl_calc_stake;
             document.getElementById('lbl-calc-liability').innerText = t.lbl_calc_liab;
             document.getElementById('lbl-calc-profit').innerText = t.lbl_calc_prof;
             
             // HUD
-            // Non sovrascrivo hud-instruction se siamo già nello step di mira
             if(gameState === 'IDLE' || gameState === 'POWER') {
                 document.getElementById('hud-instruction').innerText = t.tap;
             }
             document.getElementById('hud-h-text').innerText = t.step1;
             document.getElementById('hud-v-text').innerText = t.step3;
 
-            // Risultato
+            // Results UI translations
             document.getElementById('lbl-res-math').innerText = t.lbl_res_math;
             document.getElementById('lbl-res-net').innerText = t.lbl_res_net;
             document.getElementById('lbl-new-bankroll').innerText = t.lbl_new_bankroll;
 
-            // Se siamo nella schermata dei risultati, aggiorniamo anche i testi dinamici generati a runtime
             if(gameState === 'RESULT') {
-                 showResult(currentOutcome); // Richiama il render per ricalcolare i testi del div dinamicamente
+                 showResult(currentOutcome);
             }
 
             updateBetMath();
@@ -476,6 +489,7 @@
             });
         });
 
+        // --- STREAMING_CHUNK: Calculations and liability limits logic... ---
         function updateBetMath() {
             document.getElementById('val-stake-perc').innerText = bet.stakePerc + "%";
             let amt = bankroll * (bet.stakePerc / 100);
@@ -533,11 +547,12 @@
             drawPitch();
         }
 
+        // --- STREAMING_CHUNK: Rendering the soccer field on Canvas... ---
         function drawPitch() {
-            // Sfondo verde scuro
+            // Dark elegant grass background
             ctx.fillStyle = '#061a0d'; ctx.fillRect(0, 0, w, h);
 
-            // Strisce del prato
+            // Realistic alternating pitch stripes
             for (let i = 0; i < 10; i++) {
                 ctx.fillStyle = i % 2 === 0 ? '#114a22' : '#165c2b';
                 const yStart = goalRect.horizon + (i * (h - goalRect.horizon) / 10);
@@ -545,7 +560,7 @@
                 ctx.fillRect(0, yStart, w, yEnd - yStart);
             }
 
-            // Rete della porta (effetto profondità visiva)
+            // Realistic high-fidelity net layout
             ctx.strokeStyle = 'rgba(255,255,255,0.15)'; 
             ctx.lineWidth = 1; 
             ctx.beginPath();
@@ -561,7 +576,7 @@
             }
             ctx.stroke();
 
-            // Telaio della porta (Pali e Traversa)
+            // Premium Goal Frame
             ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.beginPath();
             ctx.moveTo(goalRect.x, goalRect.y + goalRect.h); 
@@ -572,20 +587,17 @@
             
             ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-            // FIX BUG LAYERS: Disegno elementi attivi
-            // L'ordine con cui si disegna nel Canvas determina lo Z-Index. Quello disegnato per ultimo sta sopra.
+            // --- STREAMING_CHUNK: Solving visual layer ordering... ---
+            // RESOLUTION: If saved, draw hands FIRST, then draw the ball in front (on top) of the hands
             if (gameState === 'SHOOTING' || gameState === 'RESULT') {
                 if (currentOutcome === 'saved') {
-                    // SE PARATA: Disegno prima le mani e POI la palla, così la palla sembra davanti o presa in pieno
                     drawHands(handsAnim.x, handsAnim.y);
                     drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
                 } else {
-                    // ALTRIMENTI: Disegno prima la palla e poi le mani
                     drawBall(ballAnim.x, ballAnim.y, ballAnim.scale);
                     drawHands(handsAnim.x, handsAnim.y);
                 }
             } else {
-                // In modalità IDLE o Betting, ordine standard
                 const time = Date.now() / 500;
                 handsAnim.x = w / 2 + Math.sin(time) * (goalRect.w * 0.18);
                 handsAnim.y = goalRect.y + goalRect.h * 0.45 + Math.cos(time * 1.3) * (goalRect.h * 0.1);
@@ -595,7 +607,7 @@
         }
 
         function drawHands(x, y) {
-            const size = Math.max(45, Math.min(w * 0.18, h * 0.18, 100));
+            const size = Math.max(45, Math.min(w * 0.18, h * 0.18, 90));
             ctx.font = `${size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
@@ -608,10 +620,10 @@
         }
 
         function drawBall(x, y, scale = 1) {
-            const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 70)) * scale;
+            const ballSize = Math.max(20, Math.min(w * 0.1, h * 0.1, 65)) * scale;
             ctx.font = `${ballSize}px Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             
-            ctx.fillStyle = `rgba(0,0,0,0.5)`; 
+            ctx.fillStyle = `rgba(0,0,0,0.45)`; 
             ctx.beginPath(); 
             ctx.ellipse(x, y + ballSize * 0.35, ballSize * 0.4, ballSize * 0.15, 0, 0, Math.PI * 2); 
             ctx.fill();
@@ -645,21 +657,22 @@
             updateGameBars();
         }
 
+        // --- STREAMING_CHUNK: Logic for aiming sliders... ---
         function updateGameBars() {
             if (gameState === 'POWER') {
-                power += 1.5 * pDir;
+                power += 1.6 * pDir;
                 if (power >= 100) { power = 100; pDir = -1; }
                 if (power <= 0) { power = 0; pDir = 1; }
                 document.getElementById('hud-h-fill').style.width = `${power}%`;
             } 
             else if (gameState === 'AIM_H') {
-                aimH += 2 * hDir;
+                aimH += 2.2 * hDir;
                 if (aimH >= 100) { aimH = 100; hDir = -1; }
                 if (aimH <= 0) { aimH = 0; hDir = 1; }
                 document.getElementById('hud-h-fill').style.width = `${aimH}%`;
             }
             else if (gameState === 'AIM_V') {
-                aimV += 2 * vDir;
+                aimV += 2.2 * vDir;
                 if (aimV >= 100) { aimV = 100; vDir = -1; }
                 if (aimV <= 0) { aimV = 0; vDir = 1; }
                 document.getElementById('hud-v-fill').style.height = `${aimV}%`;
@@ -703,7 +716,6 @@
             window.cancelAnimFrame(animFrame);
             switchScreen('none');
             
-            // 1. Calcolo target base + deviazione dovuta alla troppa/poca potenza
             let baseTx = goalRect.x + (aimH / 100) * goalRect.w;
             let baseTy = (goalRect.y + goalRect.h) - ((aimV / 100) * goalRect.h);
 
@@ -712,22 +724,18 @@
             let rawTx = baseTx + (Math.random() - 0.5) * deviationScaleX;
             let rawTy = baseTy + (Math.random() - 0.5) * deviationScaleY;
 
-            // Influenze pesanti della potenza
             if (power > 90) rawTy -= goalRect.h * 0.25; 
             else if (power < 35) rawTy += goalRect.h * 0.25; 
 
-            // 2. Controllo primario: lo specchio della porta
             const isInsideX = rawTx > goalRect.x + 10 && rawTx < goalRect.x + goalRect.w - 10;
             const isInsideY = rawTy > goalRect.y + 10 && rawTy < goalRect.y + goalRect.h;
             
             const isPostX = !isInsideX && rawTx >= goalRect.x - 15 && rawTx <= goalRect.x + goalRect.w + 15;
             const isPostY = !isInsideY && rawTy >= goalRect.y - 15 && rawTy <= goalRect.y + goalRect.h + 15;
 
-            // Determina esito primario
             if (!isInsideX || !isInsideY) {
                 currentOutcome = (isPostX || isPostY) ? 'post' : 'miss';
             } else {
-                // Logica Intelligenza Portiere
                 let distCenter = Math.abs(rawTx - (goalRect.x + goalRect.w/2)) / (goalRect.w/2); 
                 let keeperDifficulty = (distCenter * 60) + (power * 0.4); 
                 let keeperReach = 35 + Math.random() * 65; 
@@ -739,7 +747,7 @@
                 }
             }
 
-            // 3. FORZATURE VISIVE: Assicurarsi che l'utente capisca perfettamente cosa è successo
+            // --- STREAMING_CHUNK: Aligning goalkeeper vectors on outcome... ---
             if (currentOutcome === 'miss') {
                 ballAnim.targetScale = 0.2; 
                 ballAnim.tx = rawTx;
@@ -758,17 +766,14 @@
                 handsAnim.ty = goalRect.y + goalRect.h/2;
             } 
             else if (currentOutcome === 'saved') {
-                ballAnim.targetScale = 0.45; // Si ferma più vicina
+                ballAnim.targetScale = 0.45; 
                 ballAnim.tx = rawTx;
                 ballAnim.ty = rawTy;
-                
-                // Le mani si posizionano ESATTAMENTE sulla palla
                 handsAnim.tx = ballAnim.tx;
-                // Aggiungiamo un leggero offset verticale per far cadere la palla in mezzo all'emoji 👐
                 handsAnim.ty = ballAnim.ty - 10; 
             } 
             else if (currentOutcome === 'goal') {
-                ballAnim.targetScale = 0.3; // Entra in profondità nella rete
+                ballAnim.targetScale = 0.3; 
                 ballAnim.tx = Math.max(goalRect.x + 30, Math.min(goalRect.x + goalRect.w - 30, rawTx));
                 ballAnim.ty = Math.max(goalRect.y + 20, Math.min(goalRect.y + goalRect.h - 20, rawTy));
                 
@@ -777,7 +782,6 @@
                 handsAnim.ty = goalRect.y + goalRect.h * 0.6;
             }
 
-            // Reset posizioni iniziali
             ballAnim.x = w / 2; ballAnim.y = h * 0.85; ballAnim.scale = 1;
             handsAnim.x = w / 2; handsAnim.y = goalRect.y + goalRect.h * 0.6; 
             
@@ -805,6 +809,7 @@
             animFrame = window.requestAnimFrame(updateShooting);
         }
 
+        // --- STREAMING_CHUNK: Displaying financial and play results... ---
         function showResult(outcome) {
             const t = i18n[currentLang];
             const isGoal = outcome === 'goal';
@@ -818,10 +823,10 @@
             
             if (isGoal) {
                 titleEl.innerText = t.res_goal; 
-                titleEl.className = "text-[#00ff44] font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)] leading-tight";
+                titleEl.className = "text-[#00ff44] font-black text-[clamp(2rem,6vw,3.5rem)] mb-0 uppercase tracking-tighter drop-shadow-[0_0_20px_rgba(0,255,68,0.6)] leading-tight";
                 subEl.innerText = t.sub_goal;
             } else {
-                titleEl.className = "text-white font-black text-[clamp(2.5rem,8vw,4rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight";
+                titleEl.className = "text-white font-black text-[clamp(2rem,6vw,3.5rem)] mb-0 uppercase tracking-tighter drop-shadow-lg leading-tight";
                 if(outcome === 'saved') { titleEl.innerText = t.res_saved; subEl.innerText = t.sub_saved; }
                 else if(outcome === 'post') { titleEl.innerText = t.res_post; subEl.innerText = t.sub_post; }
                 else { titleEl.innerText = t.res_miss; subEl.innerText = t.sub_miss; }
@@ -832,9 +837,9 @@
             document.getElementById('res-bet-odds').innerText = bet.type === 'back' ? "@1.29" : "@1.31";
             
             if (bet.type === 'back') {
-                cardHeader.className = "px-3 py-2 flex justify-between items-center border-b bg-[var(--bf-back-light)] text-[var(--bf-back)]";
+                cardHeader.className = "px-3 py-1.5 flex justify-between items-center border-b bg-[var(--bf-back-light)] text-[var(--bf-back)]";
             } else {
-                cardHeader.className = "px-3 py-2 flex justify-between items-center border-b bg-[var(--bf-lay-light)] text-[var(--bf-lay)]";
+                cardHeader.className = "px-3 py-1.5 flex justify-between items-center border-b bg-[var(--bf-lay-light)] text-[var(--bf-lay)]";
             }
 
             let mathHTML = "";
@@ -849,9 +854,8 @@
                 mathHTML += `<div>${t.txt_gross}: <span class="text-green-600 font-bold">+${grossValue}€</span></div>`;
                 mathHTML += `<div>${t.txt_comm}: <span class="text-red-500 font-bold">-${commValue}€</span></div>`;
                 netValStr = `+${bet.profit.toFixed(2)}€`;
-                valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-green-600";
+                valClass = "font-black text-[clamp(1.2rem,4vw,1.8rem)] font-mono leading-none text-green-600";
                 
-                // Aggiornamento effettivo cassa solo la prima volta che entriamo per questo tiro
                 if(!titleEl.dataset.calculated) bankroll += bet.profit;
             } else {
                 if (bet.type === 'back') {
@@ -860,7 +864,7 @@
                     mathHTML += `<div>${t.txt_liab}: <span class="text-red-600 font-bold">-${bet.liability.toFixed(2)}€</span></div>`;
                 }
                 netValStr = `-${bet.liability.toFixed(2)}€`;
-                valClass = "font-black text-[clamp(1.5rem,5vw,2rem)] font-mono leading-none text-red-600";
+                valClass = "font-black text-[clamp(1.2rem,4vw,1.8rem)] font-mono leading-none text-red-600";
                 
                 if(!titleEl.dataset.calculated) bankroll -= bet.liability;
             }
@@ -874,7 +878,7 @@
 
             if (bankroll < 0.01) {
                 bankroll = 100.00; 
-                document.getElementById('val-new-bankroll').innerHTML = `100.00€ <br><span class="text-red-500 text-[10px] uppercase tracking-widest mt-1 block">${t.txt_bankrupt}</span>`;
+                document.getElementById('val-new-bankroll').innerHTML = `100.00€ <br><span class="text-red-500 text-[9px] uppercase tracking-widest mt-1 block">${t.txt_bankrupt}</span>`;
             } else {
                 document.getElementById('val-new-bankroll').innerText = bankroll.toFixed(2) + "€";
             }
@@ -886,7 +890,7 @@
         // --- 6. EVENT LISTENERS E INIZIALIZZAZIONE ---
         document.getElementById('btn-goto-bet').addEventListener('click', openBetting);
         document.getElementById('btn-next').addEventListener('click', () => {
-            document.getElementById('res-title').removeAttribute('data-calculated'); // resetto il flag per il calcolo cassa
+            document.getElementById('res-title').removeAttribute('data-calculated'); 
             openBetting();
         });
 
@@ -904,7 +908,7 @@
 
         window.addEventListener('resize', () => { clearTimeout(window.resizeTimer); window.resizeTimer = setTimeout(resize, 100); });
         
-        // Avvio iniziale (Bootstrap app)
+        // Setup initial configuration
         setActiveLanguageButton();
         updateTexts();
         resize();
